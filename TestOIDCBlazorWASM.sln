@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestOIDCBlazorWASM.Server", "TestOIDCBlazorWASM\Server\TestOIDCBlazorWASM.Server.csproj", "{9AB8CDEF-D1FB-40B8-A1AA-E4BF47AE5F45}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestOIDCBlazorWASM.Client", "TestOIDCBlazorWASM\Client\TestOIDCBlazorWASM.Client.csproj", "{987D74D5-50D1-451C-9535-C272A5F4CDDB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestOIDCBlazorWASM.Shared", "TestOIDCBlazorWASM\Shared\TestOIDCBlazorWASM.Shared.csproj", "{670975F6-0F68-45DF-8A8F-C3088BE83A88}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RecepteurMessages", "RecepteurMessages\RecepteurMessages.csproj", "{C86470E8-B411-409F-AD0C-A7E86498955B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestOIDCBlazorWASM.API", "TestOIDCBlazorWASM.API\TestOIDCBlazorWASM.API.csproj", "{6C1CEA28-A34A-4D3B-93A3-BFFA6840CBF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestOIDCBlazorWASM.Work", "TestOIDCBlazorWASM.Work\TestOIDCBlazorWASM.Work.csproj", "{0A01D309-0869-4088-BB31-BC832AA6973E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9AB8CDEF-D1FB-40B8-A1AA-E4BF47AE5F45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AB8CDEF-D1FB-40B8-A1AA-E4BF47AE5F45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AB8CDEF-D1FB-40B8-A1AA-E4BF47AE5F45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AB8CDEF-D1FB-40B8-A1AA-E4BF47AE5F45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{987D74D5-50D1-451C-9535-C272A5F4CDDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{987D74D5-50D1-451C-9535-C272A5F4CDDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{987D74D5-50D1-451C-9535-C272A5F4CDDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{987D74D5-50D1-451C-9535-C272A5F4CDDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{670975F6-0F68-45DF-8A8F-C3088BE83A88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{670975F6-0F68-45DF-8A8F-C3088BE83A88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{670975F6-0F68-45DF-8A8F-C3088BE83A88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{670975F6-0F68-45DF-8A8F-C3088BE83A88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C86470E8-B411-409F-AD0C-A7E86498955B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C86470E8-B411-409F-AD0C-A7E86498955B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C86470E8-B411-409F-AD0C-A7E86498955B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C86470E8-B411-409F-AD0C-A7E86498955B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C1CEA28-A34A-4D3B-93A3-BFFA6840CBF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C1CEA28-A34A-4D3B-93A3-BFFA6840CBF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C1CEA28-A34A-4D3B-93A3-BFFA6840CBF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C1CEA28-A34A-4D3B-93A3-BFFA6840CBF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A01D309-0869-4088-BB31-BC832AA6973E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A01D309-0869-4088-BB31-BC832AA6973E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A01D309-0869-4088-BB31-BC832AA6973E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A01D309-0869-4088-BB31-BC832AA6973E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2D65A552-56A9-4CCB-84F3-CCC7D07B0AD9}
+	EndGlobalSection
+EndGlobal

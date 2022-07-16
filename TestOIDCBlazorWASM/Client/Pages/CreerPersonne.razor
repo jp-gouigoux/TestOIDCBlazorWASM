@@ -1,0 +1,39 @@
+﻿@page "/personne"
+@attribute [Authorize(Roles = "administrateur")]
+@using Microsoft.AspNetCore.Authorization
+@using TestOIDCBlazorWASM.Shared
+@inject HttpClient client
+
+<PageTitle>Créer personne</PageTitle>
+
+<h1>Créer une nouvelle personne</h1>
+
+<AuthorizeView Roles="administrateur">
+    <Authorized>
+        <div>
+            <EditForm OnSubmit="Enregistrer" Model="p" Context="formulaire">
+                <div class="mb-3">
+                    <label for="inputPrenom" class="form-label">Prénom</label>
+                    <input type="text" id="inputPrenom" @bind-value="p.Prenom" class="form-control"/>
+                </div>
+                <div class="mb-3">
+                    <label for="inputPatronyme" class="form-label">Patronyme</label>
+                    <input type="text" id="inputPatronyme" @bind-value="p.Patronyme" class="form-control"/>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">Enregistrer</button>
+            </EditForm>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div>L'accès à cette page nécessite d'être authentifié</div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    protected Personne p = new Personne();
+
+    protected void Enregistrer()
+    {
+        client.PostAsJsonAsync(client.BaseAddress + "api/personnes", p);
+    }
+}

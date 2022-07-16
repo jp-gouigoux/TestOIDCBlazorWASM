@@ -1,0 +1,73 @@
+﻿@page "/personnes"
+@attribute [Authorize(Roles = "lecteur")]
+@using Microsoft.AspNetCore.Authorization
+@using TestOIDCBlazorWASM.Shared
+@inject HttpClient client
+
+<PageTitle>Personnes</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-9">
+                    <h1>Personnes</h1>
+                </div>
+                <div class="col-3">
+                    <button type="button" class="btn btn-link float-end" @onclick="Refresh">Rafraichir</button>
+                </div>
+            </div>
+        </div>
+
+        @if (personnes == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Prénom</th>
+                        <th>Nom</th>
+                        <th>Fiche</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in personnes)
+                    {
+                        <tr>
+                            <td>@p.Prenom</td>
+                            <td>@p.Patronyme</td>
+                            <td><a href="@p.urlFiche" target="_blank">@TitleFromUrlFiche(p.urlFiche)</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <h1>Personnes</h1>
+        <div>L'accès à cette page nécessite d'être authentifié</div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private Personne[]? personnes;
+
+    protected string TitleFromUrlFiche(string? urlFiche)
+    {
+        return string.IsNullOrEmpty(urlFiche) ? "N/A" : "Fiche GED (protégée)";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        personnes = await client.GetFromJsonAsync<Personne[]>("/api/personnes");
+    }
+
+    protected async void Refresh()
+    {
+        await OnInitializedAsync();
+        StateHasChanged();
+    }
+}

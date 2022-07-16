@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\OLD-PersonnesController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Controllers\OLD-PersonnesController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="6.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\TestOIDCBlazorWASM.Work\TestOIDCBlazorWASM.Work.csproj" />
+    <ProjectReference Include="..\Client\TestOIDCBlazorWASM.Client.csproj" />
+    <ProjectReference Include="..\Shared\TestOIDCBlazorWASM.Shared.csproj" />
+  </ItemGroup>
+
+
+</Project>
