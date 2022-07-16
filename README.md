@@ -74,7 +74,7 @@ Les durées de validité, mots de passe (évidemment bidon) et localisations des
 
 Une fois les prérequis lancés, il convient de modifier les fichiers de configuration des projets (```appsettings.*```) si les ports ou crédentiels indiqués sur les prérequis ont été modifiés. Dans le cas du certificat, il est quasi-sûr que le chemin sera à adapter dans le projet ```TESTOIDCBlazorWASM.API```. Avant de démarrer la solution, il faut également vérifier que les propriétés de lancement sont comme suit :
 
-![paramsolution](.\images\paramsolution.png)
+![paramsolution](./images/paramsolution.png)
 
 La solution peut ensuite être lancée depuis Visual Studio, avec la touche ```F5``` par exemple.
 
