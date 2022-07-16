@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -22,11 +23,12 @@ namespace RecepteurMessages
                 var handler = new HttpClientHandler();
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 handler.SslProtocols = SslProtocols.Tls12;
-                handler.ClientCertificates.Add(new X509Certificate2("cert.crt")); // TODO : continuer ici
+                var cert = new X509Certificate2(@"C:\Users\jpgou\OneDrive\Securite\ClientCertificate\dotnet\child.pfx", "Secret123");
+                handler.ClientCertificates.Add(cert);
                 client = new HttpClient(handler);
             }
 
-            using (var requete = new HttpRequestMessage(HttpMethod.Patch, "https://localhost:7070/api/personnes/" + p.ObjectId))
+            using (var requete = new HttpRequestMessage(HttpMethod.Patch, "https://localhost:7136/api/personnes/" + p.ObjectId))
             {
                 requete.Content = new StringContent(
                     "[{ \"path\": \"/urlFiche\", \"op\": \"replace\", \"value\": \"" + fiche + "\" }]", 
@@ -34,6 +36,10 @@ namespace RecepteurMessages
                     "application/json-patch+json");
                 using (HttpResponseMessage reponse = await client.SendAsync(requete))
                 {
+                    // Pour l'instant, si la personne n'existe plus, on avale juste l'exception, puisque le but est d'ajouter un document dessus
+                    // Idéalement, on devrait faire le test en amont pour ne pas travailler pour rien, mais le cas est censé rester rare
+                    if (reponse.StatusCode == HttpStatusCode.NotFound)
+                        return;
                     reponse.EnsureSuccessStatusCode();
                 }
             }

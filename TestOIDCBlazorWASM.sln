@@ -13,7 +13,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RecepteurMessages", "Recept
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestOIDCBlazorWASM.API", "TestOIDCBlazorWASM.API\TestOIDCBlazorWASM.API.csproj", "{6C1CEA28-A34A-4D3B-93A3-BFFA6840CBF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestOIDCBlazorWASM.Work", "TestOIDCBlazorWASM.Work\TestOIDCBlazorWASM.Work.csproj", "{0A01D309-0869-4088-BB31-BC832AA6973E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestOIDCBlazorWASM.Work", "TestOIDCBlazorWASM.Work\TestOIDCBlazorWASM.Work.csproj", "{0A01D309-0869-4088-BB31-BC832AA6973E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{6F8A051C-1D13-480B-BCFD-1ABABF1F5C8D}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{DBA33922-0DE1-47AB-BC17-9F2EF2545E5D}"
+	ProjectSection(SolutionItems) = preProject
+		images\paramsolution.png = images\paramsolution.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +58,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DBA33922-0DE1-47AB-BC17-9F2EF2545E5D} = {6F8A051C-1D13-480B-BCFD-1ABABF1F5C8D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2D65A552-56A9-4CCB-84F3-CCC7D07B0AD9}

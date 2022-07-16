@@ -14,11 +14,6 @@ builder.Services.AddRazorPages();
 //builder.Services.AddCors();
 
 // Ajout pour gérer le format JSONPatch, pas encore pris complètement en compte en natif dans System.Text.Json
-//builder.Services.AddControllers().AddNewtonsoftJson();
-//builder.Services.AddControllersWithViews(options =>
-//{
-//    options.InputFormatters.Insert(0, CustomJPIF.GetJsonPatchInputFormatter());
-//});
 builder.Services.AddControllers(options =>
 {
     options.InputFormatters.Insert(0, CustomJPIF.GetJsonPatchInputFormatter());

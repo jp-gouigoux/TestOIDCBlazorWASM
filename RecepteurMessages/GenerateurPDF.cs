@@ -41,9 +41,13 @@ namespace RecepteurMessages
 
             // Retour du document généré, avec copie local pour debug éventuel
 #if DEBUG
-            string FichePersonne = @"D:\Temp\fichepersonne.pdf";
-            File.Delete(FichePersonne);
-            doc.GeneratePdf(FichePersonne);
+            try
+            {
+                string FichePersonne = @"D:\Temp\fichepersonne.pdf";
+                File.Delete(FichePersonne);
+                doc.GeneratePdf(FichePersonne);
+            }
+            catch { }
 #endif
             return doc.GeneratePdf();
         }

@@ -6,7 +6,11 @@ namespace TestOIDCBlazorWASM.API
     {
         public bool ValidateCertificate(X509Certificate2 clientCertificate)
         {
-            string[] allowedThumbprints = { "ED3420BADD23CFBF3A3CE258C5F4502A2CF7C882" };
+            // TODO : voir comment passer en secrets au moins le mot de passe
+            //var cert = new X509Certificate2(@"C:\Users\jpgou\OneDrive\Securite\ClientCertificate\dotnet\dev_cert.pfx", "Secret123");
+            //return clientCertificate.Thumbprint == cert.Thumbprint;
+
+            string[] allowedThumbprints = { "6BDA0F3604953B518079FEE3E1DB18A3E1CCE9DE" };
             return allowedThumbprints.Contains(clientCertificate.Thumbprint);
         }
     }

@@ -33,7 +33,8 @@ using (var channel = connection.CreateModel())
             string idDoc = RecepteurMessages.ClientGED.DeposerGED(pdf, nomFichier);
 
             // On attend un peu, de façon à simuler une opération bien complexe
-            Thread.Sleep(5000);
+            // et laisser le temps au navigateur client de voir la liste sans la fiche
+            Thread.Sleep(3000);
 
             // Appel de l'API Personnes pour patcher le code du document associé
             // (même si le mieux sera de faire une requête CMIS dynamique à chaque appel)

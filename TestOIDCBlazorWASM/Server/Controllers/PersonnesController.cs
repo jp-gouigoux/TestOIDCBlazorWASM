@@ -9,7 +9,7 @@ using TestOIDCBlazorWASM.Work;
 
 namespace TestOIDCBlazorWASM.Server.Controllers
 {
-    [Authorize]
+    [Authorize] // Même si l'attribut Authorize est hérité, il faut le remettre pour que les spécialisations ci-dessous soient prises en compte
     [ApiController]
     public class PersonnesController : PersonnesControllerBase
     {
@@ -18,7 +18,7 @@ namespace TestOIDCBlazorWASM.Server.Controllers
         }
 
         [Authorize(Policy = "lecteur")] // On ne surcharge que les autorisations qui le nécessitent, mais on ne peut pas passer en AllowAnonymous quelque chose qui hérite un Authorize
-        [HttpGet]
+        [HttpGet] // Les expositions doivent être explicitement reprises car elles ne sont pas héritées et il y a alors conflit entre les GET et POST sur la même route
         [Route("/api/[controller]")] // Par contre, les routes sont obligatoirement réécrites
         public override IActionResult LecturePersonnes(
             [FromQuery(Name = "$skip")] int skip = 0,
@@ -29,7 +29,7 @@ namespace TestOIDCBlazorWASM.Server.Controllers
         }
 
         [Authorize(Roles = "administrateur")] // On ne surcharge que les autorisations qui le nécessitent, mais on ne peut pas passer en AllowAnonymous quelque chose qui hérite un Authorize
-        [HttpPost]
+        [HttpPost] // Les expositions doivent être explicitement reprises car elles ne sont pas héritées et il y a alors conflit entre les GET et POST sur la même route
         [Route("/api/[controller]")] // Par contre, les routes sont obligatoirement réécrites
         public override IActionResult CreationPersonne([FromBody] DbPersonne personne)
         {

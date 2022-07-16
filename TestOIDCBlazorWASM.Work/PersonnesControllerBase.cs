@@ -69,6 +69,10 @@ namespace TestOIDCBlazorWASM.Work
                 return new JsonResult(result.First());
         }
 
+        // TODO : pour les écritures, ça sera intéressant de passer un nom d'user pour la traçabilité
+        // et de voir comment on le value en mode certificat. Ce serait le nom du certificat éventuellement,
+        // ce qui renforcerait le besoin d'en créer un pour chaque client d'API différent (bien
+        // également pour ne pas avoir à révoquer tout le monde d'un coup en cas de fuite de certificat)
         [HttpPost]
         [Route("/api/[controller]")]
         public virtual IActionResult CreationPersonne([FromBody] DbPersonne personne)
@@ -95,7 +99,8 @@ namespace TestOIDCBlazorWASM.Work
         public virtual IActionResult PatcherPersonne(string objectId, [FromBody] JsonPatchDocument patch)
         {
             if (patch == null) return BadRequest();
-            var personne = Collection.Find(item => item.ObjectId == objectId).First();
+            var personne = Collection.Find(item => item.ObjectId == objectId).FirstOrDefault();
+            if (personne == null) return NotFound();
             patch.ApplyTo(personne);
             Collection.FindOneAndReplace(item => item.ObjectId == objectId, personne);
             return new ObjectResult(personne);
