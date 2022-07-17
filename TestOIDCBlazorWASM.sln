@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestOIDCBlazorWASM.Shared",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RecepteurMessages", "RecepteurMessages\RecepteurMessages.csproj", "{C86470E8-B411-409F-AD0C-A7E86498955B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestOIDCBlazorWASM.API", "TestOIDCBlazorWASM.API\TestOIDCBlazorWASM.API.csproj", "{6C1CEA28-A34A-4D3B-93A3-BFFA6840CBF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestOIDCBlazorWASM.API", "TestOIDCBlazorWASM.API\TestOIDCBlazorWASM.API.csproj", "{6C1CEA28-A34A-4D3B-93A3-BFFA6840CBF9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestOIDCBlazorWASM.Work", "TestOIDCBlazorWASM.Work\TestOIDCBlazorWASM.Work.csproj", "{0A01D309-0869-4088-BB31-BC832AA6973E}"
 EndProject
@@ -22,7 +22,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "�
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{DBA33922-0DE1-47AB-BC17-9F2EF2545E5D}"
 	ProjectSection(SolutionItems) = preProject
+		images\affichagepdf.png = images\affichagepdf.png
+		images\certificatracine.png = images\certificatracine.png
+		images\loginchemistry.png = images\loginchemistry.png
+		images\mongodetails.png = images\mongodetails.png
+		images\mongoresultats.png = images\mongoresultats.png
 		images\paramsolution.png = images\paramsolution.png
+		images\scenario1.png = images\scenario1.png
+		images\scenario2.png = images\scenario2.png
+		images\scenario3.png = images\scenario3.png
+		images\scenario4.png = images\scenario4.png
+		images\scenario5.png = images\scenario5.png
+		images\scenario6.png = images\scenario6.png
+		images\welcomechemistry.png = images\welcomechemistry.png
 	EndProjectSection
 EndProject
 Global
