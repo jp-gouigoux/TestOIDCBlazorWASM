@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -14,7 +15,7 @@ namespace RecepteurMessages
     {
         private static HttpClient client = null;
 
-        public async static void AjouterFicheSurPersonne(Personne p, Uri fiche)
+        public async static void AjouterFicheSurPersonne(IConfiguration Configuration, Personne p, Uri fiche)
         {
             // Quand c'est un service qui appelle une API, c'est plus logique de s'authentifier avec un certificat
             // et le premier code exemple utilisé est celui indiqué sur https://stackoverflow.com/questions/40014047/add-client-certificate-to-net-core-httpclient
@@ -23,7 +24,9 @@ namespace RecepteurMessages
                 var handler = new HttpClientHandler();
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 handler.SslProtocols = SslProtocols.Tls12;
-                var cert = new X509Certificate2(@"C:\Users\jpgou\OneDrive\Securite\ClientCertificate\dotnet\child.pfx", "Secret123");
+                var cert = new X509Certificate2(
+                    Configuration.GetSection("securite")["cheminFichierCertificatClient"],
+                    Environment.GetEnvironmentVariable("MDP_CERT_CLIENT"));
                 handler.ClientCertificates.Add(cert);
                 client = new HttpClient(handler);
             }

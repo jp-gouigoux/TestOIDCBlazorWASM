@@ -2,6 +2,7 @@
 using DotCMIS.Client;
 using DotCMIS.Client.Impl;
 using DotCMIS.Data.Impl;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,36 +13,24 @@ namespace RecepteurMessages
 {
     internal class ClientGED
     {
-        public static string DeposerGED(byte[] contenu, string nomFichier)
+        public static string DeposerGED(IConfiguration Configuration, byte[] contenu, string nomFichier)
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
             parameters[DotCMIS.SessionParameter.BindingType] = BindingType.AtomPub;
-            //parameters[DotCMIS.SessionParameter.BindingType] = BindingType.WebServices;
-            //parameters[DotCMIS.SessionParameter.AtomPubUrl] = "http://localhost:9000/cmis/atom11";
-            parameters[DotCMIS.SessionParameter.AtomPubUrl] = "http://localhost:9000/nuxeo/atom/cmis";
-            //parameters[DotCMIS.SessionParameter.WebServicesRepositoryService] = "http://localhost:9000/cmis/services11/cmis?wsdl";
-            //parameters[DotCMIS.SessionParameter.WebServicesAclService] = "http://localhost:9000/cmis/services11/cmis?wsdl";
-            //parameters[DotCMIS.SessionParameter.WebServicesDiscoveryService] = "http://localhost:9000/cmis/services11/cmis?wsdl";
-            //parameters[DotCMIS.SessionParameter.WebServicesMultifilingService] = "http://localhost:9000/cmis/services11/cmis?wsdl";
-            //parameters[DotCMIS.SessionParameter.WebServicesNavigationService] = "http://localhost:9000/cmis/services11/cmis?wsdl";
-            //parameters[DotCMIS.SessionParameter.WebServicesObjectService] = "http://localhost:9000/cmis/services11/cmis?wsdl";
-            //parameters[DotCMIS.SessionParameter.WebServicesPolicyService] = "http://localhost:9000/cmis/services11/cmis?wsdl";
-            //parameters[DotCMIS.SessionParameter.WebServicesRelationshipService] = "http://localhost:9000/cmis/services11/cmis?wsdl";
-            //parameters[DotCMIS.SessionParameter.WebServicesRepositoryService] = "http://localhost:9000/cmis/services11/cmis?wsdl";
-            //parameters[DotCMIS.SessionParameter.WebServicesVersioningService] = "http://localhost:9000/cmis/services11/cmis?wsdl";
-            parameters[DotCMIS.SessionParameter.User] = "Administrator";
-            parameters[DotCMIS.SessionParameter.Password] = "Administrator";
+            parameters[DotCMIS.SessionParameter.AtomPubUrl] = Configuration.GetSection("ged")["urlAtomPub"];
+            parameters[DotCMIS.SessionParameter.User] = Configuration.GetSection("ged")["serviceAccountName"];
+            parameters[DotCMIS.SessionParameter.Password] = Environment.GetEnvironmentVariable("GED_SERVICE_ACCOUNT_PWD") ?? "";
             SessionFactory factory = SessionFactory.NewInstance();
             ISession session = factory.GetRepositories(parameters)[0].CreateSession();
 
             IFolder root = session.GetRootFolder();
 
-            ICmisObject result = session.GetObjectByPath("/repertoire");
+            ICmisObject result = session.GetObjectByPath("/" + Configuration.GetSection("ged")["nomRepertoireStockageFichesPersonnes"]);
             IFolder dossier;
             if (result == null)
             {
                 IDictionary<string, object> folderProperties = new Dictionary<string, object>();
-                folderProperties.Add(PropertyIds.Name, "repertoire");
+                folderProperties.Add(PropertyIds.Name, Configuration.GetSection("ged")["nomRepertoireStockageFichesPersonnes"]);
                 folderProperties.Add(PropertyIds.ObjectTypeId, "cmis:folder");
                 dossier = root.CreateFolder(folderProperties);
             }
@@ -52,7 +41,7 @@ namespace RecepteurMessages
 
             try
             {
-                ICmisObject resFichier = session.GetObjectByPath("/repertoire/" + nomFichier);
+                ICmisObject resFichier = session.GetObjectByPath("/" + Configuration.GetSection("ged")["nomRepertoireStockageFichesPersonnes"] + "/" + nomFichier);
                 IDocument docExistant = (IDocument)resFichier;
                 return docExistant.Id;
             }

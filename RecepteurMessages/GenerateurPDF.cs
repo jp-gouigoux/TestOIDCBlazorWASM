@@ -1,4 +1,5 @@
-﻿using QuestPDF.Fluent;
+﻿using Microsoft.Extensions.Configuration;
+using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using System;
@@ -15,11 +16,14 @@ namespace RecepteurMessages
         private static Random hasard = new Random();
         private static HttpClient client = new HttpClient();
 
-        public static byte[] GenererFiche(Personne p)
+        public static byte[] GenererFiche(IConfiguration Configuration, Personne p)
         {
             // Récupération d'une image sur XKCD
-            int codeImage = hasard.Next(614) + 1;
-            Task<string> definition = client.GetStringAsync("https://xkcd.com/" + codeImage.ToString() + "/info.0.json");
+            int maximumIndexImage = 614;
+            int.TryParse(Configuration.GetSection("xkcd")["maximumIndexImage"], out maximumIndexImage);
+            int indexImage = hasard.Next(maximumIndexImage) + 1;
+            Task<string> definition = client.GetStringAsync(
+                Configuration.GetSection("xkcd")["templateURLAPI"].Replace("{indexImage}", indexImage.ToString()));
             JsonDocument json = JsonDocument.Parse(definition.Result);
             string? urlPhoto = json.RootElement.GetProperty("img").GetString();
             Task<byte[]> image = client.GetByteArrayAsync(urlPhoto);
@@ -40,15 +44,6 @@ namespace RecepteurMessages
             });
 
             // Retour du document généré, avec copie local pour debug éventuel
-#if DEBUG
-            try
-            {
-                string FichePersonne = @"D:\Temp\fichepersonne.pdf";
-                File.Delete(FichePersonne);
-                doc.GeneratePdf(FichePersonne);
-            }
-            catch { }
-#endif
             return doc.GeneratePdf();
         }
     }

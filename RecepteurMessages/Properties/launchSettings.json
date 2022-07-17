@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "RecepteurMessages": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "GED_SERVICE_ACCOUNT_PWD": "Administrator",
+        "MDP_CERT_CLIENT": "Secret123"
+      }
+    }
+  }
+}
