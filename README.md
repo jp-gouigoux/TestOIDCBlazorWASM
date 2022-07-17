@@ -70,6 +70,12 @@ Get-ChildItem -Path cert:\localMachine\my\6BDA0F3604953B518079FEE3E1DB18A3E1CCE9
 
 Les durées de validité, mots de passe (évidemment bidon) et localisations des fichiers sont bien sûr à adapter. Les valeurs ci-dessus sont celles utilisées dans les settings livrés avec le code source de l'application.
 
+Le certificat racine ```root.pfx``` doit être placé dans les autorités de certification racines de confiance (clic-droit et ```Toutes les tâches``` puis ```Importer...```) :
+
+![certificatracine](./images/certificatracine.png)
+
+Si besoin pour tester les API protégées par Client Certificat dans le navigateur, on peut aussi installer le certificat ```child.pfx``` dans le magasin personnel de Chrome ou Edge. Pour Postman, la documentation explique comment enregistrer le certificat racine ainsi que le certificat client, mais je n'ai personnellement pas réussi à trouver comment le faire fonctionner, une erreur de type ```Hostname/IP does not match certificate's altnames``` restant présentes dans tous les cas.
+
 # Lancement de l'application
 
 Une fois les prérequis lancés, il convient de modifier les fichiers de configuration des projets (```appsettings.*```) si les ports ou crédentiels indiqués sur les prérequis ont été modifiés. Dans le cas du certificat, il est quasi-sûr que le chemin sera à adapter dans le projet ```TESTOIDCBlazorWASM.API```. Avant de démarrer la solution, il faut également vérifier que les propriétés de lancement sont comme suit :
@@ -77,6 +83,56 @@ Une fois les prérequis lancés, il convient de modifier les fichiers de configu
 ![paramsolution](./images/paramsolution.png)
 
 La solution peut ensuite être lancée depuis Visual Studio, avec la touche ```F5``` par exemple.
+
+# Scénario de test nominal
+
+L'écran d'accueil montre une application "vide", au sens où n'apparaissent que les fonctions existant par défaut dans le modèle d'application .NET :
+
+![scenario1](./images/scenario1.png)
+
+L'application est conçue pour que les menus de gestion des personnes n'apparaissent qu'une fois une authentification réalisée avec succès. Il faut pour cela utiliser le lien ```Log in``` en haut à droite de l'interface. La fenêtre qui apparaît alors est celle fournie par KeyCloak :
+
+![scenario2](./images/scenario2.png)
+
+Si un utilisateur est connecté avec le rôle ```administrateur```, il verra alors les deux menus supplémentaires montrés ci-dessous, tandis qu'un utilisateur avec le rôle ```lecteur``` ne verra que le second :
+
+![scenario3](./images/scenario3.png)
+
+La création d'une nouvelle personne dans l'interface dédiée crée aussitôt une persistance dans la base de données, mais émet également un message dans une file RabbitMQ. Cette file est lue par le projet ```RecepteurMessages``` qui traite le message en créant une fiche PDF associée à la personne :
+
+![scenario4](./images/scenario4.png)
+
+Ce traitement est suffisamment lent (grâce à un ```System.Thread.Sleep``` additionnel) pour qu'une bascule immédiate sur la liste des personnes montre une création partielle de la nouvelle entité :
+
+![scenario5](./images/scenario5.png)
+
+En attendant quelques secondes avant d'utiliser le bouton ```Rafraichir```, on obtient une interface mise à jour dans laquelle le lien vers la GED permet de télécharger le fichier PDF généré en lien avec la personne créée (en utilisant une connexion à la GED en mode ```Basic Authentication```, gérée normalement directement par le navigateur) :
+
+![scenario6](./images/scenario6.png)
+
+# Persistance
+
+La persistance consiste en une simple collection dans la base MongoDB :
+
+![mongoresultats](./images/mongoresultats.png)
+
+L'ouverture du document créé dans le scénario ci-dessus révèle la forme de l'URL permettant d'accéder à la fiche :
+
+![mongodetails](./images/mongodetails.png)
+
+# Observation des documents
+
+En-dehors de l'interface de l'application qui est extrêmement simple, il est également possible de constater le fonctionnement correct en se connectant avec le client Apache Chemistry Workbench sur la GED :
+
+![connexionged](./images/loginchemistry.png)
+
+Une fois le dépôt par défaut choisi, l'interface permet de parcourir les contenus des répertoires, et en particulier celui créé automatiquement pour accueillir les PDF générés :
+
+![parcoursged](./images/welcomechemistry.png)
+
+On peut accéder par ce biais à la fiche PDF générée, ou bien en utilisant directement le lien stocké dans MongoDB. Le contenu est généré arbitrairement, avec un appel à l'API publique de XKCD pour incorporer automatiquement une image dans le fichier :
+
+![affichagepdf](./images/affichagepdf.png)
 
 # Structure
 
@@ -88,6 +144,10 @@ L'application est une solution Visual Studio 2022 avec 6 projets :
 - **RecepteurMessages**, justement, est une application de type Console qui tourne en boucle, lit le contenu de la queue de messages RabbitMQ à l'écoute de nouvelles personnes, et traite cet évènement en réalisant trois tâches : générer un fichier PDF en lien avec la personne, pousser ce fichier PDF dans la GED et enfin modifier la personne pour qu'elle pointe correctement sur l'URL de cette fiche (il aurait été plus découplé de laisser l'API Personnes réaliser un appel CMIS dynamique à la GED, mais le but était de montrer ici une écriture en mode ```PATCH```). Pour cette dernière opération, ```RecepteurMessages``` utilise l'API en s'authentifiant sans compte interactif, mais par le certificat.
 - **Work** contient une implémentation centralisée des deux API exposées par les projets ci-dessus, de façon à garantir un traitement de la persistance consistant, car unifié.
 - **Shared** contient les classes partagées par la majorité des projets, et en particulier la classe de définition de l'entité ```Personne```.
+
+# Conception détaillée
+
+Afin de ne pas encombrer le présent fichier, qui a juste pour objectif de permettre de lancer l'application, les détails sur la conception, les problèmes rencontrés, les choix architecturaux et leurs avantages seront exposés à part, sur plusieurs articles d'une même catégorie dans le blog http://gouigoux.com/blog-fr/?tag=TestOIDCBlazorWASM.
 
 # Références
 
