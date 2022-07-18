@@ -25,7 +25,9 @@ namespace RecepteurMessages
 
             IFolder root = session.GetRootFolder();
 
-            ICmisObject result = session.GetObjectByPath("/" + Configuration.GetSection("ged")["nomRepertoireStockageFichesPersonnes"]);
+            ICmisObject result = null;
+            try { session.GetObjectByPath("/" + Configuration.GetSection("ged")["nomRepertoireStockageFichesPersonnes"]); }
+            catch { }
             IFolder dossier;
             if (result == null)
             {
