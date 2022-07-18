@@ -18,18 +18,31 @@ Pour fonctionner, l'application a besoin des serveurs satellites suivants, pour 
 ### KeyCloak
 
 ```
-docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:18.0.2 start-dev
+docker run -p 8080:8080 -d -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin --name iam quay.io/keycloak/keycloak:18.0.2 start-dev
 ```
 
 L'interface de KeyCloak est disponible sur http://localhost:8080/admin/, et les crédentiels sont ceux indiqués en paramètre du lancement du conteneur. Le paramétrage recommandé est le suivant :
 
 1. Créer un nouveau tenant d'authentification (```AddRealm``` en haut à gauche, le nommer par exemple ```LivreENI```)
-2. 
+1. A l'intérieur de ce royaume (un tenant, en langage d'IAM), créer un client avec OpenID Connect comme protocole ; dans notre exemple, il sera nommé ```appli-eni```
+1. Ajouter à ce client deux URLs de redirection valides, à savoir ```https://localhost:7070/authentication/login-callback``` et ```https://localhost:7070/authentication/logout-callback``` (le numéro de port est à ajuster avec celui utilisé par le projet ```Serveur```)
+1. Dans la même interface, spécifier comme Web Origin ```https://localhost:7070```, là aussi en ajustant le port en fonction du contexte applicatif
+1. Toujours dans la définition du client ```client-eni```, mais cette fois dans l'onglet Roles (attention à ne pas confondre avec le menu Roles sur la gauche), ajouter deux rôles, un nommé ```administrateur``` et un autre nommé ```lecteur```
+1. Dans l'onglet ```Mappers```, rajouter l'entité proposée ```client roles``` en le sélectionnant dans le menu ```Add Builtin```
+1. Cliquer sur cette entité ```client roles``` pour modifier ses propriétés et changer le contenu par défaut de ```Token Claim Name``` en ```user_roles```
+1. Dans la même fenêtre, activer les options ```Add to ID token``` et ```Add to userinfo```
+1. Ne pas oublier de cliquer ensuite sur ```Save``` pour valider ces modifications de la façon dont les rôles seront envoyés
+1. Changer d'interface en cliquant sur le menu ```Users``` sur la gauche et créer un premier utilisateur (dans notre exemple, son identifiant sera ```jpg```), en précisant nom et prénom au moins
+1. Dans l'onglet ```Credentials```, spécifier un mot de passe pour cet utilisateur en désactivant le mode temporaire pour ne pas forcer la réinitialisation lors de la première connexion (ceci n'est bien sûr pas à faire en production')
+1. Dans l'onglet ```Role Mappings```, choisir le rôle client ```appli-eni``` et assigner à cet utilisateur les rôles ```administrateur``` et ```lecteur```
+1. Recommencer l'opération avec un second utilisateur, qu'on nommera par exemple ```gwen``` et qui aura comme unique rôle client ```lecteur```
+
+**Attention à respecter scrupuleusement les contenus des paramètres, qui sont pour certains sensibles à la casse (nom du royaume) et pour d'autres (comme les origines web) poser problème si un caractère ```/``` est mis à la fin de l'URL**
 
 ### RabbitMQ
 
 ```
-docker run --rm -it --hostname my-rabbit -p 15672:15672 -p 5672:5672 rabbitmq:3-management
+docker run -d --hostname my-rabbit -p 15672:15672 -p 5672:5672 --name mom rabbitmq:3-management
 ```
 
 L'interface est disponible sur http://localhost:15672, le user par défaut est ```guest``` et le mot de passe par défaut ```guest```.
@@ -37,7 +50,7 @@ L'interface est disponible sur http://localhost:15672, le user par défaut est `
 ### MongoDB
 
 ```
-docker run -p 27017:27017 -d --name db mongo:4.4
+docker run -d -p 27017:27017 --name db mongo:4.4
 ```
 
 Pas d'interface web de gestion par défaut, mais Robo 3T est un excellent client, qui peut être téléchargé sur https://github.com/Studio3T/robomongo et reste gratuit à ce jour. A noter que, par défaut, l'accès à la base de données n'est pas sécurisé.
@@ -75,6 +88,8 @@ Les durées de validité, mots de passe (évidemment bidon) et localisations des
 Le certificat racine ```root.pfx``` doit être placé dans les autorités de certification racines de confiance (clic-droit et ```Toutes les tâches``` puis ```Importer...```) :
 
 ![certificatracine](./images/certificatracine.png)
+
+Attention à bien se positionner sur la gestion des certificats de la machine et non l'interface de gestion des certificats de l'utilisateur (le nom de l'application doit apparaître comme ```certlm``` et non comme ```certmgr```)
 
 Si besoin pour tester les API protégées par Client Certificat dans le navigateur, on peut aussi installer le certificat ```child.pfx``` dans le magasin personnel de Chrome ou Edge. Pour Postman, la documentation explique comment enregistrer le certificat racine ainsi que le certificat client, mais je n'ai personnellement pas réussi à trouver comment le faire fonctionner, une erreur de type ```Hostname/IP does not match certificate's altnames``` restant présentes dans tous les cas.
 
