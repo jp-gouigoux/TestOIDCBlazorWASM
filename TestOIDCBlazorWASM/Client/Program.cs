@@ -24,12 +24,18 @@ builder.Services.AddOidcAuthentication(options => {
     // Charge les paramètres depuis le fichier de settings
     builder.Configuration.Bind("Oidc", options.ProviderOptions);
     //options.UserOptions.NameClaim = "preferred_username"; // La valeur par défaut name est bien
-    options.UserOptions.RoleClaim = "user_roles";
+    //options.UserOptions.RoleClaim = "user_roles";
+
+    // Si on ne surcharge pas cette option, .NET cherche le contenu de "roles" et ne passe donc rien dans l'identité
+    options.UserOptions.RoleClaim = "resource_access.appli-eni.roles"; // resource_access.${client_id}.roles dans KeyCloak
+
     //options.UserOptions.ScopeClaim= "scope";
     //options.ProviderOptions.PostLogoutRedirectUri = "/";
 });
 
-// Nécessaire pour découper le JSONArray des roles en des claims multiples, sinon .NET ne les comprend pas
+// Le fait de passer le bon RoleClaim ci-dessus ne suffit pas, car comme il est complexe, .NET ne le comprend pas directement.
+// La classe ci-dessous récupère le contenu JSON de resource_access et transforme l'array enfoui dans appli-eni / roles en autant
+// d'attributs de type "resource_access.appli-eni.roles"
 // https://github.com/javiercn/BlazorAuthRoles pour le code et https://github.com/dotnet/AspNetCore.Docs/issues/17649 pour l'issue
 builder.Services.AddApiAuthorization().AddAccountClaimsPrincipalFactory<RolesClaimsPrincipalFactory>();
 

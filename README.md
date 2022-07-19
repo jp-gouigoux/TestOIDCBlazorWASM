@@ -29,8 +29,8 @@ L'interface de KeyCloak est disponible sur http://localhost:8080/admin/, et les 
 1. Dans la même interface, spécifier comme Web Origin ```https://localhost:7070```, là aussi en ajustant le port en fonction du contexte applicatif
 1. Toujours dans la définition du client ```client-eni```, mais cette fois dans l'onglet Roles (attention à ne pas confondre avec le menu Roles sur la gauche), ajouter deux rôles, un nommé ```administrateur``` et un autre nommé ```lecteur```
 1. Dans l'onglet ```Mappers```, rajouter l'entité proposée ```client roles``` en le sélectionnant dans le menu ```Add Builtin```
-1. Cliquer sur cette entité ```client roles``` pour modifier ses propriétés et changer le contenu par défaut de ```Token Claim Name``` en ```user_roles```
-1. Dans la même fenêtre, activer les options ```Add to ID token``` et ```Add to userinfo```
+1. Cliquer sur cette entité ```client roles``` pour modifier ses propriétés et activer l'option ```Add to ID token```
+1. Vérifier que le critère ```JSON Claim Type``` est bien sur ```String``` (le mode ```JSON``` pourrait aider, mais pas réussi à le traiter pour l'instant)
 1. Ne pas oublier de cliquer ensuite sur ```Save``` pour valider ces modifications de la façon dont les rôles seront envoyés
 1. Changer d'interface en cliquant sur le menu ```Users``` sur la gauche et créer un premier utilisateur (dans notre exemple, son identifiant sera ```jpg```), en précisant nom et prénom au moins
 1. Dans l'onglet ```Credentials```, spécifier un mot de passe pour cet utilisateur en désactivant le mode temporaire pour ne pas forcer la réinitialisation lors de la première connexion (ceci n'est bien sûr pas à faire en production')

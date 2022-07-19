@@ -30,7 +30,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     //    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
     //};
     o.RequireHttpsMetadata = false;
-    o.TokenValidationParameters.RoleClaimType = "user_roles";
+    //o.TokenValidationParameters.RoleClaimType = "user_roles";
+    o.TokenValidationParameters.RoleClaimType = "resource_access.appli-eni.roles";
     o.TokenValidationParameters.NameClaimType = "preferred_username"; // Fait sens ici car côté serveur, on utiliserait le nom pour la traçabilité
     o.TokenValidationParameters.ValidateIssuer = true;
     //o.SaveToken = true; // A voir dans la doc pour l'utilisation précise
@@ -45,6 +46,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     //    }
     //};
 });
+
+builder.Services.AddTransient<IClaimsTransformation, ClaimsTransformer>();
+
+//builder.Services.AddApiAuthorization().AddAccountClaimsPrincipalFactory<ClaimsTransformer>();
 
 // Solution trouvée sur https://stackoverflow.com/questions/53702555/cant-access-roles-in-jwt-token-net-core
 // qui permet de générer des policies, et aussi d'extraire des rôles avec un ClaimsTransformer (redondant
