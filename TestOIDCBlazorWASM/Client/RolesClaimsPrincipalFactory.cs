@@ -52,10 +52,20 @@ namespace TestOIDCBlazorWASM.Client
                     // On est dans le mode où KeyCloak envoie le contenu sous forme d'un texte JSON (le fait de passer l'option Claim JSON Type à JSON n'a pour l'instant rien donné de probant)
                     // TODO : Il reste un bug non bloquant sur le fait que les claims rajoutés sont systématiquement doublés, sans que le débogueur ne passe plusieurs fois ici. A regarder avec des logs, potentiellement plus fiables.
                     var resourceaccess = identity.FindAll("resource_access");
+                    string Contenu = resourceaccess.First().Value;
                     JsonDocument json = JsonDocument.Parse(resourceaccess.First().Value);
-                    foreach (JsonElement elem in json.RootElement.EnumerateArray())
-                        foreach (JsonElement role in elem.GetProperty("appli-eni").GetProperty("roles").EnumerateArray())
-                            identity.AddClaim(new Claim(options.RoleClaim, role.GetString() ?? String.Empty));
+                    JsonElement elem = json.RootElement;
+                    if (json.RootElement.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (JsonElement e in json.RootElement.EnumerateArray())
+                            if (e.TryGetProperty("appli-eni", out var prop))
+                            { 
+                                elem = e;
+                                break;
+                            }
+                    }
+                    foreach (JsonElement role in elem.GetProperty("appli-eni").GetProperty("roles").EnumerateArray())
+                        identity.AddClaim(new Claim(options.RoleClaim, role.GetString() ?? String.Empty));
                 }
                 else
                 {
