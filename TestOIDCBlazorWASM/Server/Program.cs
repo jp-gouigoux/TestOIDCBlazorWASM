@@ -21,8 +21,10 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
 {
-    o.Authority = "http://localhost:8080/realms/LivreENI/";
-    o.Audience = "account";
+    // On doit pouvoir faire mieux avec un binder de configuration
+    IConfigurationSection ConfigOIDC = builder.Configuration.GetSection("OIDC");
+    o.Authority = ConfigOIDC["Authority"];
+    o.Audience = ConfigOIDC["Audience"];
     // Les deux options à suivre ne sont à faire qu'en mode DEVELOPMENT, mais depuis que l'app doit être buildée
     // avant qu'on puisse avoir accès à app.Environment.IsDevelopment(), on ne peut plus utiliser ces codes
     //o.BackchannelHttpHandler = new HttpClientHandler()
@@ -31,8 +33,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     //};
     o.RequireHttpsMetadata = false;
     //o.TokenValidationParameters.RoleClaimType = "user_roles";
-    o.TokenValidationParameters.RoleClaimType = "resource_access.appli-eni.roles";
-    o.TokenValidationParameters.NameClaimType = "preferred_username"; // Fait sens ici car côté serveur, on utiliserait le nom pour la traçabilité
+
+    o.TokenValidationParameters.RoleClaimType = ConfigOIDC["ModelePourRoleClaim"].Replace("${client_id}", ConfigOIDC["ClientId"]);
+    o.TokenValidationParameters.NameClaimType = ConfigOIDC["NameClaimType"]; // Fait sens ici car côté serveur, on utiliserait le nom pour la traçabilité
     o.TokenValidationParameters.ValidateIssuer = true;
     //o.SaveToken = true; // A voir dans la doc pour l'utilisation précise
     //o.Events = new JwtBearerEvents()
@@ -57,8 +60,9 @@ builder.Services.AddTransient<IClaimsTransformation, ClaimsTransformer>();
 // Pour des cas encore plus sophistiqués, voir https://referbruv.com/blog/role-based-and-claims-based-authorization-in-aspnet-core-using-policies-hands-on/
 builder.Services.AddAuthorization(o =>
 {
-    o.AddPolicy("administrateur", policy => policy.RequireClaim("user_roles", "administrateur"));
-    o.AddPolicy("lecteur", policy => policy.RequireClaim("user_roles", "lecteur"));
+    string TargetUserRolesClaimName = builder.Configuration.GetSection("OIDC")["TargetUserRolesClaimName"];
+    o.AddPolicy("administrateur", policy => policy.RequireClaim(TargetUserRolesClaimName, "administrateur"));
+    o.AddPolicy("lecteur", policy => policy.RequireClaim(TargetUserRolesClaimName, "lecteur"));
 });
 
 // Pour info, on peut brancher Keycloak comme proxy d'un IDP Microsoft OIDC comme Azure DC, mais pour récupérer

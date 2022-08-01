@@ -19,15 +19,29 @@ namespace TestOIDCBlazorWASM.Work
     [Authorize]
     public abstract class PersonnesControllerBase : Controller
     {
+        private IMongoDatabase Database;
+        private string NomCollectionPersonnes { get; init; }
+        private IMongoCollection<DbPersonne> Collection;
+        private string NomServeurMOM { get; init; }
+        private string NomQueueMessages { get; init; }
+        private string ModeleEnteteHTTPLocation { get; init; }
+
         public PersonnesControllerBase(IConfiguration config)
         {
-            string conn = config.GetValue<string>("PersonnesConnectionString");
-            Database = new MongoClient(conn).GetDatabase("personnes");
+            // Paramétrage base NoSQL
+            string conn = config.GetSection("PersistanceNoSQL").GetValue<string>("PersonnesConnectionString");
+            string NomBaseDeDonneesPersonnes = config.GetSection("PersistanceNoSQL").GetValue<string>("PersonnesDatabaseName");
+            Database = new MongoClient(conn).GetDatabase(NomBaseDeDonneesPersonnes);
+            NomCollectionPersonnes = config.GetSection("PersistanceNoSQL").GetValue<string>("PersonnesCollectionName");
+            Collection = Database.GetCollection<DbPersonne>("personnes");
+
+            // Paramétrage MOM
+            NomServeurMOM = config.GetSection("RabbitMQ")["HoteServeur"];
+            NomQueueMessages = config.GetSection("RabbitMQ")["NomQueueMessagesCreationPersonnes"];
+
+            // Paramétrage API
+            ModeleEnteteHTTPLocation = config["ModeleEnteteHTTPLocation"];
         }
-
-        private IMongoDatabase Database;
-
-        private IMongoCollection<DbPersonne> Collection => Database.GetCollection<DbPersonne>("personnes");
 
         [AllowAnonymous]
         [HttpGet]
@@ -81,16 +95,16 @@ namespace TestOIDCBlazorWASM.Work
                 personne.ObjectId = Guid.NewGuid().ToString("N");
             Collection.InsertOneAsync(personne);
 
-            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var factory = new ConnectionFactory() { HostName = this.NomServeurMOM };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.QueueDeclare(queue: "personnes", durable: false, exclusive: false, autoDelete: false, arguments: null);
+                channel.QueueDeclare(queue: this.NomQueueMessages, durable: false, exclusive: false, autoDelete: false, arguments: null);
                 var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(personne));
-                channel.BasicPublish(exchange: "", routingKey: "personnes", basicProperties: null, body: body);
+                channel.BasicPublish(exchange: "", routingKey: this.NomQueueMessages, basicProperties: null, body: body);
             }
 
-            Response.Headers.Add("Location", "/api/personnes/" + personne.ObjectId);
+            Response.Headers.Add("Location", ModeleEnteteHTTPLocation.Replace("${object_id}", personne.ObjectId));
             return new StatusCodeResult(204);
         }
 
