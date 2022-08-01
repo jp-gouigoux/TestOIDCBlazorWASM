@@ -57,7 +57,7 @@ builder.Services.AddTransient<IClaimsTransformation, ClaimsTransformer>();
 // Pour des cas encore plus sophistiqués, voir https://referbruv.com/blog/role-based-and-claims-based-authorization-in-aspnet-core-using-policies-hands-on/
 builder.Services.AddAuthorization(o =>
 {
-    o.AddPolicy("admin", policy => policy.RequireClaim("user_roles", "administrateur"));
+    o.AddPolicy("administrateur", policy => policy.RequireClaim("user_roles", "administrateur"));
     o.AddPolicy("lecteur", policy => policy.RequireClaim("user_roles", "lecteur"));
 });
 
