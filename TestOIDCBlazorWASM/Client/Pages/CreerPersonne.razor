@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using TestOIDCBlazorWASM.Shared
 @inject HttpClient client
+@inject IConfiguration config
 
 <PageTitle>Créer personne</PageTitle>
 
@@ -34,6 +35,6 @@
 
     protected void Enregistrer()
     {
-        client.PostAsJsonAsync("api/personnes", p);
+        client.PostAsJsonAsync(config["URLAPIPersonnes"], p);
     }
 }

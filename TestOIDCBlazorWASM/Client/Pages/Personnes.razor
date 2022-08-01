@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using TestOIDCBlazorWASM.Shared
 @inject HttpClient client
+@inject IConfiguration config
 
 <PageTitle>Personnes</PageTitle>
 
@@ -57,12 +58,14 @@
 
     protected string TitleFromUrlFiche(string? urlFiche)
     {
-        return string.IsNullOrEmpty(urlFiche) ? "N/A" : "Fiche GED (protégée)";
+        return string.IsNullOrEmpty(urlFiche) 
+            ? config.GetSection("GED")["AffichageFicheInexistante"]
+            : config.GetSection("GED")["AffichageFicheExistante"];
     }
 
     protected override async Task OnInitializedAsync()
     {
-        personnes = await client.GetFromJsonAsync<Personne[]>("api/personnes");
+        personnes = await client.GetFromJsonAsync<Personne[]>(config["URLAPIPersonnes"]);
     }
 
     protected async void Refresh()

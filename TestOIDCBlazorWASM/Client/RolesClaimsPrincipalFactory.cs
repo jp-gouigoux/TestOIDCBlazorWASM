@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
 using System;
 using System.Collections.Generic;
@@ -31,8 +32,16 @@ namespace TestOIDCBlazorWASM.Client
     /// </summary>
     public class RolesClaimsPrincipalFactory : AccountClaimsPrincipalFactory<RemoteUserAccount>
     {
-        public RolesClaimsPrincipalFactory(IAccessTokenProviderAccessor accessor) : base(accessor)
+        private string PrefixeRoleClaim { get; init; }
+        private string OIDCClientId { get; init; }
+        private string SuffixeRoleClaim { get; init; }
+
+        public RolesClaimsPrincipalFactory(IAccessTokenProviderAccessor accessor, IConfiguration config) : base(accessor)
         {
+            string ModelePourRoleClaim = config.GetSection("OIDC")["ModelePourRoleClaim"];
+            PrefixeRoleClaim = ModelePourRoleClaim.Substring(0, ModelePourRoleClaim.IndexOf("."));
+            SuffixeRoleClaim = ModelePourRoleClaim.Substring(ModelePourRoleClaim.LastIndexOf(".") + 1);
+            OIDCClientId = config.GetSection("OIDC")["ClientId"];
         }
 
         public override async ValueTask<ClaimsPrincipal> CreateUserAsync(RemoteUserAccount account, RemoteAuthenticationUserOptions options)
@@ -47,24 +56,24 @@ namespace TestOIDCBlazorWASM.Client
                 // un nombre de variable simple et en plus un contenu qui ne soit pas une liste.
 
                 var identity = (ClaimsIdentity)user.Identity;
-                if (identity.RoleClaimType == "resource_access.appli-eni.roles")
+                if (identity.RoleClaimType == PrefixeRoleClaim + "." + OIDCClientId + "." + SuffixeRoleClaim)
                 {
                     // On est dans le mode où KeyCloak envoie le contenu sous forme d'un texte JSON (le fait de passer l'option Claim JSON Type à JSON n'a pour l'instant rien donné de probant)
                     // TODO : Il reste un bug non bloquant sur le fait que les claims rajoutés sont systématiquement doublés, sans que le débogueur ne passe plusieurs fois ici. A regarder avec des logs, potentiellement plus fiables.
-                    var resourceaccess = identity.FindAll("resource_access");
+                    var resourceaccess = identity.FindAll(PrefixeRoleClaim);
                     string Contenu = resourceaccess.First().Value;
                     JsonDocument json = JsonDocument.Parse(resourceaccess.First().Value);
                     JsonElement elem = json.RootElement;
                     if (json.RootElement.ValueKind == JsonValueKind.Array)
                     {
                         foreach (JsonElement e in json.RootElement.EnumerateArray())
-                            if (e.TryGetProperty("appli-eni", out var prop))
+                            if (e.TryGetProperty(OIDCClientId, out var prop))
                             { 
                                 elem = e;
                                 break;
                             }
                     }
-                    foreach (JsonElement role in elem.GetProperty("appli-eni").GetProperty("roles").EnumerateArray())
+                    foreach (JsonElement role in elem.GetProperty(OIDCClientId).GetProperty(SuffixeRoleClaim).EnumerateArray())
                         identity.AddClaim(new Claim(options.RoleClaim, role.GetString() ?? String.Empty));
                 }
                 else

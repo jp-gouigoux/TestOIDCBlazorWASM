@@ -22,12 +22,14 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
 // Pour la liaison avec l'ordre suivant, voir https://medium.com/@marcodesanctis2/role-based-security-with-blazor-and-identity-server-4-aba12da70049
 builder.Services.AddOidcAuthentication(options => {
     // Charge les paramètres depuis le fichier de settings
-    builder.Configuration.Bind("Oidc", options.ProviderOptions);
+    builder.Configuration.Bind("OIDC", options.ProviderOptions);
     //options.UserOptions.NameClaim = "preferred_username"; // La valeur par défaut name est bien
     //options.UserOptions.RoleClaim = "user_roles";
 
     // Si on ne surcharge pas cette option, .NET cherche le contenu de "roles" et ne passe donc rien dans l'identité
-    options.UserOptions.RoleClaim = "resource_access.appli-eni.roles"; // resource_access.${client_id}.roles dans KeyCloak
+    string ModelePourRoleClaim = builder.Configuration.GetSection("OIDC")["ModelePourRoleClaim"];
+    string ClientId = builder.Configuration.GetSection("OIDC")["ClientId"];
+    options.UserOptions.RoleClaim = ModelePourRoleClaim.Replace("${client_id}", ClientId);
 
     //options.UserOptions.ScopeClaim= "scope";
     //options.ProviderOptions.PostLogoutRedirectUri = "/";
