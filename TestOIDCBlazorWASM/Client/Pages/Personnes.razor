@@ -62,7 +62,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        personnes = await client.GetFromJsonAsync<Personne[]>("/api/personnes");
+        personnes = await client.GetFromJsonAsync<Personne[]>("api/personnes");
     }
 
     protected async void Refresh()
