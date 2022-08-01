@@ -25,8 +25,8 @@ namespace RecepteurMessages
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 handler.SslProtocols = SslProtocols.Tls12;
                 var cert = new X509Certificate2(
-                    Configuration.GetSection("securite")["cheminFichierCertificatClient"],
-                    Environment.GetEnvironmentVariable("MDP_CERT_CLIENT"));
+                    Configuration.GetSection("Securite")["CheminFichierCertificatClient"],
+                    Configuration.GetSection("Securite")["MotDePasseCertificatClient"]);
                 handler.ClientCertificates.Add(cert);
                 client = new HttpClient(handler);
             }

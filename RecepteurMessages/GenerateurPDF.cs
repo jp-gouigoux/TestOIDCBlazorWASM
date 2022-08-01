@@ -20,10 +20,10 @@ namespace RecepteurMessages
         {
             // Récupération d'une image sur XKCD
             int maximumIndexImage = 614;
-            int.TryParse(Configuration.GetSection("xkcd")["maximumIndexImage"], out maximumIndexImage);
+            int.TryParse(Configuration.GetSection("XKCD")["MaximumIndexImage"], out maximumIndexImage);
             int indexImage = hasard.Next(maximumIndexImage) + 1;
             Task<string> definition = client.GetStringAsync(
-                Configuration.GetSection("xkcd")["templateURLAPI"].Replace("{indexImage}", indexImage.ToString()));
+                Configuration.GetSection("XKCD")["TemplateURLAPI"].Replace("{indexImage}", indexImage.ToString()));
             JsonDocument json = JsonDocument.Parse(definition.Result);
             string? urlPhoto = json.RootElement.GetProperty("img").GetString();
             Task<byte[]> image = client.GetByteArrayAsync(urlPhoto);
@@ -43,7 +43,7 @@ namespace RecepteurMessages
                 });
             });
 
-            // Retour du document généré, avec copie local pour debug éventuel
+            // Retour du document généré
             return doc.GeneratePdf();
         }
     }

@@ -17,22 +17,22 @@ namespace RecepteurMessages
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
             parameters[DotCMIS.SessionParameter.BindingType] = BindingType.AtomPub;
-            parameters[DotCMIS.SessionParameter.AtomPubUrl] = Configuration.GetSection("ged")["urlAtomPub"];
-            parameters[DotCMIS.SessionParameter.User] = Configuration.GetSection("ged")["serviceAccountName"];
-            parameters[DotCMIS.SessionParameter.Password] = Environment.GetEnvironmentVariable("GED_SERVICE_ACCOUNT_PWD") ?? "";
+            parameters[DotCMIS.SessionParameter.AtomPubUrl] = Configuration.GetSection("GED")["URLAtomPub"];
+            parameters[DotCMIS.SessionParameter.User] = Configuration.GetSection("GED")["ServiceAccountName"];
+            parameters[DotCMIS.SessionParameter.Password] = Configuration.GetSection("GED")["ServiceAccountPassword"];
             SessionFactory factory = SessionFactory.NewInstance();
             ISession session = factory.GetRepositories(parameters)[0].CreateSession();
 
             IFolder root = session.GetRootFolder();
 
             ICmisObject result = null;
-            try { session.GetObjectByPath("/" + Configuration.GetSection("ged")["nomRepertoireStockageFichesPersonnes"]); }
+            try { session.GetObjectByPath("/" + Configuration.GetSection("GED")["NomRepertoireStockageFichesPersonnes"]); }
             catch { }
             IFolder dossier;
             if (result == null)
             {
                 IDictionary<string, object> folderProperties = new Dictionary<string, object>();
-                folderProperties.Add(PropertyIds.Name, Configuration.GetSection("ged")["nomRepertoireStockageFichesPersonnes"]);
+                folderProperties.Add(PropertyIds.Name, Configuration.GetSection("GED")["NomRepertoireStockageFichesPersonnes"]);
                 folderProperties.Add(PropertyIds.ObjectTypeId, "cmis:folder");
                 dossier = root.CreateFolder(folderProperties);
             }
@@ -43,7 +43,7 @@ namespace RecepteurMessages
 
             try
             {
-                ICmisObject resFichier = session.GetObjectByPath("/" + Configuration.GetSection("ged")["nomRepertoireStockageFichesPersonnes"] + "/" + nomFichier);
+                ICmisObject resFichier = session.GetObjectByPath("/" + Configuration.GetSection("GED")["NomRepertoireStockageFichesPersonnes"] + "/" + nomFichier);
                 IDocument docExistant = (IDocument)resFichier;
                 return docExistant.Id;
             }
