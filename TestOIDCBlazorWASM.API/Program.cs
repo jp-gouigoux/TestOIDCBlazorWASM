@@ -20,7 +20,7 @@ builder.Services.AddControllers(options =>
     options.InputFormatters.Insert(0, CustomJPIF.GetJsonPatchInputFormatter());
 }).AddNewtonsoftJson();
 
-builder.Services.AddTransient<CertificateValidation>();
+//builder.Services.AddTransient<CertificateValidation>();
 builder.Services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
 {
     options.AllowedCertificateTypes = CertificateTypes.All;
@@ -29,15 +29,12 @@ builder.Services.AddAuthentication(CertificateAuthenticationDefaults.Authenticat
     {
         OnCertificateValidated = context =>
         {
-            var validationService = context.HttpContext.RequestServices.GetService<CertificateValidation>();
-            if (validationService.ValidateCertificate(context.ClientCertificate))
-            {
+            string empreinteReference = builder.Configuration.GetSection("CertificatClient")["Empreinte"];
+            string empreinteRecue = context.ClientCertificate.Thumbprint;
+            if (string.Compare(empreinteRecue, empreinteReference) == 0)
                 context.Success();
-            }
             else
-            {
                 context.Fail("Invalid certificate");
-            }
             return Task.CompletedTask;
         },
         OnAuthenticationFailed = context =>
@@ -59,7 +56,9 @@ builder.Services.AddAuthentication(CertificateAuthenticationDefaults.Authenticat
 // La transformation du PFX en PEM change tout de même le message d'erreur de Postman de "Unable to verify the first certificate" à "socket hang up"
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
-    var cert = new X509Certificate2(@"C:\Users\jpgou\OneDrive\Securite\ClientCertificate\dotnet\child.pfx", "Secret123");
+    var cert = new X509Certificate2(
+        builder.Configuration.GetSection("CertificatClient")["AdresseFichier"],
+        builder.Configuration.GetSection("CertificatClient")["MotDePasse"]);
     options.ConfigureHttpsDefaults(o =>
     {
         o.ServerCertificate = cert;
@@ -73,7 +72,7 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // Oublié depuis le début !!!
+app.UseAuthentication();
 
 // Côté autorisations, on ne fait pas dans le détail sur cette exposition d'API : si le client
 // a le bon certificat, il a droit à tous les accès
