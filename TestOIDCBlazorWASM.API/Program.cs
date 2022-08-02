@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-// On est obligé d'avoir deux serveurs d'API séparés si on veut ne pas être obligés d'être en MutualTLS,
+// Il est nécessaire d'avoir deux serveurs d'API séparés si on veut ne pas être obligés d'être en MutualTLS,
 // car c'est activé au niveau de l'entrée du serveur, comme expliqué sur https://docs.microsoft.com/en-us/aspnet/core/security/authentication/certauth?view=aspnetcore-6.0
 // Toutefois, l'avantage est qu'on n'aura pas à supporter CORS, puisque ce sera un user-agent simple
 // et pas un navigateur qui passera par cette exposition (et l'autre est sur le même hôte).

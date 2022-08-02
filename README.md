@@ -22,7 +22,7 @@ d'initialisation en mode Docker.
 ### KeyCloak
 
 ```
-docker run -p 8080:8080 -d -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin --name iam quay.io/keycloak/keycloak:18.0.2 start-dev
+docker run -p 8080:8080 -d -e KEYCLOAK_ADMIN=armoire -e KEYCLOAK_ADMIN_PASSWORD=vBWtB2PloopC042cszXZ --name iam quay.io/keycloak/keycloak:18.0.2 start-dev
 ```
 
 L'interface de KeyCloak est disponible sur http://localhost:8080/admin/, et les crédentiels sont ceux indiqués en paramètre du lancement
@@ -47,10 +47,10 @@ du conteneur. Le paramétrage recommandé est le suivant :
 ### RabbitMQ
 
 ```
-docker run -d --hostname my-rabbit -p 15672:15672 -p 5672:5672 --name mom rabbitmq:3-management
+docker run -d --hostname my-rabbit -p 15672:15672 -p 5672:5672 -e RABBITMQ_DEFAULT_USER=rapido -e RABBITMQ_DEFAULT_PASS=k5rXH6wmBhE2bukfXFsz --name mom rabbitmq:3-management
 ```
 
-L'interface est disponible sur http://localhost:15672, le compte et le mot de passe par défaut sont tous les deux ```guest```.
+L'interface est disponible sur http://localhost:15672 avec les crédentiels fournis ci-dessus.
 
 ### MongoDB
 
@@ -60,6 +60,9 @@ docker run -d -p 27017:27017 --name db mongo:4.4
 
 Pas d'interface web de gestion par défaut, mais Robo 3T est un excellent client, qui peut être téléchargé
 sur https://github.com/Studio3T/robomongo et reste gratuit à ce jour. A noter que, par défaut, l'accès à la base de données n'est pas sécurisé.
+La gestion de l'authentification sur MongoDB étant une tâche un peu plus complexe que juste paramétrer un login et un mot de passe, elle est laissée
+de côté pour l'instant. La base de données n'étant pas exposée directement par l'ingress, on bénéficie tout de même d'un premier rideau de sécurité,
+qu'on peut éventuellement compléter en utilisant des règles de pare-feu de façon que seuls les serveurs applicatifs aient accès à la base de données.
 
 ### Nuxeo
 
@@ -68,8 +71,11 @@ docker run -d --name ged -p 9000:8080 nuxeo
 ```
 
 Par défaut, il faut utiliser le user ```Administrator``` et le mot de passe ```Administrator``` pour se connecter aux endpoints de la GED.
-Nous utiliserons le type ```AtomPub``` accessible sur http://localhost:9000/nuxeo/atom/cmis). Aucune interface graphique n'est disponible
-par défaut, mais il est possible d'activer un module Nuxeo pour cela, ou bien d'utiliser le client CMIS Apache Chemistry
+L'image fournie sur DockerHub ne rend pas simple de modifier les crédentiels et ne fournit par défaut pas non plus d'interface graphique
+qui permettrait de remédier à ce mot de passe simple par défaut. Comme pour MongoDB, il est toutefois moins grave sur cette instance
+de garder ce défaut de sécurité pour l'instant, car il s'agit d'un serveur de pur back office, non exposé aux clients par l'ingress.
+Nous utiliserons le type ```AtomPub``` accessible sur http://localhost:9000/nuxeo/atom/cmis). Comme expliqué, l'image Nuxeo ne fournit
+pas d'interface graphique par défaut, donc le plus simple est d'utiliser le client CMIS Apache Chemistry
 disponible sur http://archive.apache.org/dist/chemistry/opencmis/1.1.0/.
 
 # Préparation des certificats
@@ -90,7 +96,7 @@ dans la commande suivante en remplacement de ==>THUMBPRINT-RACINE<==, ainsi que 
 par ce certificat dont nous allons faire une autorité.
 
 ```
-Get-ChildItem -Path cert:\LocalMachine\My\==>THUMBPRINT-RACINE<== | Export-PfxCertificate -FilePath .\racinetestoidc.pfx -Password ( ConvertTo-SecureString -String "ThFDiOG764nBGV65sZ89" -Force -AsPlainText )
+Get-ChildItem -Path cert:\LocalMachine\My\==>THUMBPRINT-RACINE<== | Export-PfxCertificate -FilePath .\racinetestoidc.pfx -Password ( ConvertTo-SecureString -String "iOG76ThFD45sZ89nBGV6" -Force -AsPlainText )
 ```
 
 Cette seconde commande permet d'exporter le certificat sous la forme d'un fichier PFX dont l'utilisation sera protégée par un mot de passe. 
@@ -114,7 +120,7 @@ l'empreinte du certificat racine créé plus haut. La commande indique en sortie
 être utilisée ci-dessous pour créer le fichier PFX de ce second certificat, en remplaçant ==>THUMBPRINT-CLIENT<== par l'empreinte juste créée.
 
 ```
-Get-ChildItem -Path cert:\LocalMachine\My\==>THUMBPRINT-CLIENT<=== | Export-PfxCertificate -FilePath .\clienttestoidc.pfx -Password ( ConvertTo-SecureString -String "69PmPPp5gBNoLG78hFSfx8" -Force -AsPlainText )
+Get-ChildItem -Path cert:\LocalMachine\My\==>THUMBPRINT-CLIENT<=== | Export-PfxCertificate -FilePath .\clienttestoidc.pfx -Password ( ConvertTo-SecureString -String "oLG78hFS65gBNfx89PmPPp" -Force -AsPlainText )
 ```
 
 Le point le plus important à configurer dans l'application est le serveur d'API en mode ClientCertificate qui est dans le projet **TestOIDCBlazorWASM.API**.
