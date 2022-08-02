@@ -184,7 +184,7 @@ Si un utilisateur est connecté avec le rôle ```administrateur```, il verra alo
 
 ![scenario3](./images/scenario3.png)
 
-La création d'une nouvelle personne dans l'interface dédiée crée aussitôt une persistance dans la base de données, mais émet également un message dans une file RabbitMQ. Cette file est lue par le projet ```RecepteurMessages``` qui traite le message en créant une fiche PDF associée à la personne :
+La création d'une nouvelle personne dans l'interface dédiée provoque aussitôt une persistance dans la base de données, mais émet également un message dans une file RabbitMQ. Cette file est lue par le projet ```RecepteurMessages``` qui traite le message en créant une fiche PDF associée à la personne :
 
 ![scenario4](./images/scenario4.png)
 
