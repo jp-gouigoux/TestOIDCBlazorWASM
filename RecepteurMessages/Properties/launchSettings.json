@@ -2,6 +2,9 @@
   "profiles": {
     "RecepteurMessages": {
       "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
     }
   }
 }
