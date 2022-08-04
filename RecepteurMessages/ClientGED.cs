@@ -17,8 +17,8 @@ namespace RecepteurMessages
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
             parameters[DotCMIS.SessionParameter.BindingType] = BindingType.AtomPub;
-            parameters[DotCMIS.SessionParameter.AtomPubUrl] = Configuration.GetSection("GED")["URLAtomPub"];
-            parameters[DotCMIS.SessionParameter.User] = Configuration.GetSection("GED")["ServiceAccountName"];
+            parameters[DotCMIS.SessionParameter.AtomPubUrl] = Configuration["GED__URLAtomPub"];
+            parameters[DotCMIS.SessionParameter.User] = Configuration["GED__ServiceAccountName"];
             parameters[DotCMIS.SessionParameter.Password] = Configuration.GetSection("GED")["ServiceAccountPassword"];
             SessionFactory factory = SessionFactory.NewInstance();
             ISession session = factory.GetRepositories(parameters)[0].CreateSession();

@@ -17,11 +17,13 @@ IConfiguration Configuration = new ConfigurationBuilder()
   .AddCommandLine(args)
   .Build();
 
-var factory = new ConnectionFactory() { HostName = Configuration.GetSection("RabbitMQ")["HoteServeur"] };
+string ServeurRabbitMQ = Configuration["RabbitMQ__HoteServeur"];
+if (ServeurRabbitMQ == null) throw new ArgumentException("L'argument de ligne de commande RabbitMQ__HoteServeur doit obligatoirement spécifier un serveur RabbitMQ");
+var factory = new ConnectionFactory() { HostName = ServeurRabbitMQ };
 using (var connection = factory.CreateConnection())
 using (var channel = connection.CreateModel())
 {
-    channel.QueueDeclare(queue: Configuration.GetSection("RabbitMQ")["NomQueueMessagesCreationPersonnes"], durable: false, exclusive: false, autoDelete: false, arguments: null);
+    channel.QueueDeclare(queue: Configuration["RabbitMQ__NomQueueMessagesCreationPersonnes"], durable: false, exclusive: false, autoDelete: false, arguments: null);
     var consumer = new EventingBasicConsumer(channel);
     consumer.Received += (model, ea) =>
     {
@@ -55,7 +57,7 @@ using (var channel = connection.CreateModel())
                 ClientAPIPersonnes.AjouterFicheSurPersonne(
                     Configuration,
                     p,
-                    new Uri(Configuration.GetSection("GED")["ModeleURLExpositionDirecteDocuments"]
+                    new Uri(Configuration["GED__ModeleURLExpositionDirecteDocuments"]
                         .Replace("{nomFichier}", nomFichier)
                         .Replace("{idDoc}", idDoc)));
 
@@ -76,7 +78,7 @@ using (var channel = connection.CreateModel())
             channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
         }
     };
-    channel.BasicConsume(queue: Configuration.GetSection("RabbitMQ")["NomQueueMessagesCreationPersonnes"], autoAck: false, consumer: consumer);
+    channel.BasicConsume(queue: Configuration["RabbitMQ__NomQueueMessagesCreationPersonnes"], autoAck: false, consumer: consumer);
 
     Console.WriteLine("Appuyer la touche ENTREE pour terminer le programme");
     Console.ReadLine();

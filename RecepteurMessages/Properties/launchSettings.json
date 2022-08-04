@@ -1,10 +1,18 @@
 {
   "profiles": {
     "RecepteurMessages": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "RabbitMQ__HoteServeur=localhost\r\nRabbitMQ__NomQueueMessagesCreationPersonnes=personnes\r\nGED__URLAtomPub=http://localhost:9000/nuxeo/atom/cmis\r\nGED__ServiceAccountName=Administrator\r\nGED__ModeleURLExpositionDirecteDocuments=http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}",
+      "environmentVariables": {
+        "Securite__CheminFichierCertificatClient": "\"C:\\Users\\jpgou\\OneDrive\\Securite\\ClientCertificate\\clienttestoidc.pfx\""
+      }
     },
     "Docker": {
-      "commandName": "Docker"
+      "commandName": "Docker",
+      "commandLineArgs": "--RabbitM__HoteServeur localhost --RabbitMQ__NomQueueMessagesCreationPersonnes personnes --GED__URLAtomPub http://localhost:9000/nuxeo/atom/cmis --GED__ServiceAccountName Administrator --GED__ModeleURLExpositionDirecteDocuments \"http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}\"",
+      "environmentVariables": {
+        "DelaiSupplementaireTraitementEnMillisecondes": "5000"
+      }
     }
   }
 }
