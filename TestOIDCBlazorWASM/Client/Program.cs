@@ -8,14 +8,13 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// TODO : voir comment on peut créer une autre HttpClient injecté, car sinon, le FetchData plante, même si on met le serveur en [AllowAnonymous]
-//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 // Comme expliqué sur https://docs.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/additional-scenarios?view=aspnetcore-6.0
 builder.Services
     .AddHttpClient("WebAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
-    .CreateClient("WebAPI"));
+builder.Services.AddHttpClient("NeedsNoAccessToken", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("WebAPI"));
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("NeedsNoAccessToken"));
 
 // Fonctionne car Microsoft.AspNetCore.Components.WebAssembly.Authentication a été ajoutée
 // Nécessite aussi le contenu du fichier appsettings.json, qui lui aussi doit être créé, mais dans wwwroot

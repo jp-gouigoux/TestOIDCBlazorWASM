@@ -2,7 +2,7 @@
 @attribute [Authorize(Roles = "lecteur")]
 @using Microsoft.AspNetCore.Authorization
 @using TestOIDCBlazorWASM.Shared
-@inject HttpClient client
+@inject IHttpClientFactory HttpFactory
 @inject IConfiguration config
 
 <PageTitle>Personnes</PageTitle>
@@ -65,7 +65,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        personnes = await client.GetFromJsonAsync<Personne[]>(config["URLAPIPersonnes"]);
+        var client = HttpFactory.CreateClient("WebAPI");
+        personnes = await client.GetFromJsonAsync<Personne[]>("api/personnes");
     }
 
     protected async void Refresh()
