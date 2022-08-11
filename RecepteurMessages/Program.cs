@@ -17,9 +17,16 @@ IConfiguration Configuration = new ConfigurationBuilder()
   .AddCommandLine(args)
   .Build();
 
+string MotDePasseCertificatClient = Configuration.GetSection("Securite")["MotDePasseCertificatClient"];
+string FichierMotDePasse = Configuration.GetSection("Securite")["FichierMotDePasseCertificatClient"];
+if (!string.IsNullOrEmpty(FichierMotDePasse))
+    MotDePasseCertificatClient = File.ReadAllText(FichierMotDePasse);
+
 string ServeurRabbitMQ = Configuration["RabbitMQ__HoteServeur"];
+string UserNameRabbitMQ = Configuration["RabbitMQ__Utilisateur"] ?? "guest";
+string PasswordRabbitMQ = Configuration["RabbitMQ__MotDePasse"] ?? "guest";
 if (ServeurRabbitMQ == null) throw new ArgumentException("L'argument de ligne de commande RabbitMQ__HoteServeur doit obligatoirement spécifier un serveur RabbitMQ");
-var factory = new ConnectionFactory() { HostName = ServeurRabbitMQ };
+var factory = new ConnectionFactory() { HostName = ServeurRabbitMQ, UserName = UserNameRabbitMQ, Password = PasswordRabbitMQ };
 using (var connection = factory.CreateConnection())
 using (var channel = connection.CreateModel())
 {

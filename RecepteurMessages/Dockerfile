@@ -18,5 +18,6 @@ ENV XKCD__MaximumIndexImage=${MAXINDEX_XKCD}
 ENV DelaiSupplementaireTraitementEnMillisecondes=0
 ENV GED__NomRepertoireStockageFichesPersonnes=repertoire
 ENV Securite__CheminFichierCertificatClient=clienttestoidc.pfx
+ENV URLBaseServiceAPI=https://api
 ENTRYPOINT ["dotnet", "RecepteurMessages.dll"]
 # CMD ["RabbitMQ__HoteServeur=localhost", "RabbitMQ__NomQueueMessagesCreationPersonnes=personnes", "GED__URLAtomPub=http://localhost:9000/nuxeo/atom/cmis", "GED__ServiceAccountName=Administrator", "GED__ModeleURLExpositionDirecteDocuments=http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}"]

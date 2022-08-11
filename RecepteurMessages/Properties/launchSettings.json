@@ -4,15 +4,20 @@
       "commandName": "Project",
       "commandLineArgs": "RabbitMQ__HoteServeur=localhost\r\nRabbitMQ__NomQueueMessagesCreationPersonnes=personnes\r\nGED__URLAtomPub=http://localhost:9000/nuxeo/atom/cmis\r\nGED__ServiceAccountName=Administrator\r\nGED__ModeleURLExpositionDirecteDocuments=http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}",
       "environmentVariables": {
+        "URLBaseServiceAPI": "https:/localhost:7136",
         "Securite__CheminFichierCertificatClient": "\"C:\\Users\\jpgou\\OneDrive\\Securite\\ClientCertificate\\clienttestoidc.pfx\""
       }
     },
     "Docker": {
       "commandName": "Docker",
-      "commandLineArgs": "--RabbitM__HoteServeur localhost --RabbitMQ__NomQueueMessagesCreationPersonnes personnes --GED__URLAtomPub http://localhost:9000/nuxeo/atom/cmis --GED__ServiceAccountName Administrator --GED__ModeleURLExpositionDirecteDocuments \"http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}\"",
+      "commandLineArgs": "--RabbitMQ__HoteServeur my-rabbit --RabbitMQ__NomQueueMessagesCreationPersonnes personnes --RabbitMQ__Utilisateur rapido --RabbitMQ__MotDePasse k5rXH6wmBhE2bukfXFsz --GED__URLAtomPub http://localhost:9000/nuxeo/atom/cmis --GED__ServiceAccountName Administrator --GED__ModeleURLExpositionDirecteDocuments \"http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}\"",
       "environmentVariables": {
-        "DelaiSupplementaireTraitementEnMillisecondes": "5000"
-      }
+        "Securite__MotDePasseCertificatClient": "oLG78hFS65gBNfx89PmPPp",
+        "URLBaseServiceAPI": "https:/localhost:7136",
+        "DelaiSupplementaireTraitementEnMillisecondes": "5000",
+        "Securite__CheminFichierCertificatClient": "/certif/clienttestoidc.pfx"
+      },
+      "DockerfileRunArguments": "--network exerciceeni -v \"C:\\Users\\jpgou\\OneDrive\\Securite\\ClientCertificate:/certif:ro\""
     }
   }
 }

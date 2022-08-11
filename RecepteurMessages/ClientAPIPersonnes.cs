@@ -24,14 +24,18 @@ namespace RecepteurMessages
                 var handler = new HttpClientHandler();
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 handler.SslProtocols = SslProtocols.Tls12;
+                string MotDePasseCertificatClient = Configuration.GetSection("Securite")["MotDePasseCertificatClient"];
+                string FichierMotDePasse = Configuration.GetSection("Securite")["FichierMotDePasseCertificatClient"];
+                if (!string.IsNullOrEmpty(FichierMotDePasse))
+                    MotDePasseCertificatClient = File.ReadAllText(FichierMotDePasse);
                 var cert = new X509Certificate2(
                     Configuration.GetSection("Securite")["CheminFichierCertificatClient"],
-                    Configuration.GetSection("Securite")["MotDePasseCertificatClient"]);
+                    MotDePasseCertificatClient);
                 handler.ClientCertificates.Add(cert);
                 client = new HttpClient(handler);
             }
 
-            using (var requete = new HttpRequestMessage(HttpMethod.Patch, "https://localhost:7136/api/personnes/" + p.ObjectId))
+            using (var requete = new HttpRequestMessage(HttpMethod.Patch, Configuration["URLBaseServiceAPI"] + "/api/personnes/" + p.ObjectId))
             {
                 requete.Content = new StringContent(
                     "[{ \"path\": \"/urlFiche\", \"op\": \"replace\", \"value\": \"" + fiche + "\" }]", 
