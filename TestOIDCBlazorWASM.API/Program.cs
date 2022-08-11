@@ -29,7 +29,7 @@ builder.Services.AddAuthentication(CertificateAuthenticationDefaults.Authenticat
     {
         OnCertificateValidated = context =>
         {
-            string empreinteReference = builder.Configuration.GetSection("CertificatClient")["Empreinte"];
+            string empreinteReference = builder.Configuration.GetSection("Securite")["EmpreinteCertificatClient"];
             string empreinteRecue = context.ClientCertificate.Thumbprint;
             if (string.Compare(empreinteRecue, empreinteReference) == 0)
                 context.Success();
@@ -57,8 +57,8 @@ builder.Services.AddAuthentication(CertificateAuthenticationDefaults.Authenticat
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
     var cert = new X509Certificate2(
-        builder.Configuration.GetSection("CertificatClient")["AdresseFichier"],
-        builder.Configuration.GetSection("CertificatClient")["MotDePasse"]);
+        builder.Configuration.GetSection("Securite")["CheminFichierCertificatClient"],
+        builder.Configuration.GetSection("Securite")["MotDePasseCertificatClient"]);
     options.ConfigureHttpsDefaults(o =>
     {
         o.ServerCertificate = cert;

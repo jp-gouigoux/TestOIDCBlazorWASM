@@ -25,6 +25,19 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "commandLineArgs": "--RabbitMQ__HoteServeur my-rabbit --RabbitMQ__NomQueueMessagesCreationPersonnes personnes --RabbitMQ__Utilisateur rapido --RabbitMQ__MotDePasse k5rXH6wmBhE2bukfXFsz --PersistanceNoSQL__PersonnesConnectionString mongodb://db:27017 --PersistanceNoSQL__PersonnesDatabaseName personnes --PersistanceNoSQL__PersonnesCollectionName personnes",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/weatherforecast",
+      "environmentVariables": {
+        "Securite__MotDePasseCertificatClient": "oLG78hFS65gBNfx89PmPPp",
+        "Securite__CheminFichierCertificatClient": "/certif/clienttestoidc.pfx",
+        "Securite__EmpreinteCertificatClient": "41E81F27F42F381B7406129DAAB055802F9A64B9"
+      },
+      "DockerfileRunArguments": "--network exerciceeni -p 7136:443 -v \"C:\\Users\\jpgou\\OneDrive\\Securite\\ClientCertificate:/certif:ro\"",
+      "publishAllPorts": true,
+      "useSSL": true
     }
   }
 }
