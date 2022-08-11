@@ -1,4 +1,4 @@
-﻿    using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Newtonsoft.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -20,7 +20,7 @@ namespace TestOIDCBlazorWASM.Server
             string ModelePourRoleClaim = config.GetSection("OIDC")["ModelePourRoleClaim"];
             PrefixeRoleClaim = ModelePourRoleClaim.Substring(0, ModelePourRoleClaim.IndexOf("."));
             SuffixeRoleClaim = ModelePourRoleClaim.Substring(ModelePourRoleClaim.LastIndexOf(".") + 1);
-            OIDCClientId = config.GetSection("OIDC")["ClientId"];
+            OIDCClientId = config["OIDC__ClientId"];
             TargetUserRolesClaimName = config.GetSection("OIDC").GetValue<string>("TargetUserRolesClaimName");
         }
 

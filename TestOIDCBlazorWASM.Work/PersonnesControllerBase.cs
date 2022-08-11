@@ -24,20 +24,24 @@ namespace TestOIDCBlazorWASM.Work
         private IMongoCollection<DbPersonne> Collection;
         private string NomServeurMOM { get; init; }
         private string NomQueueMessages { get; init; }
+        private string NomUtilisateurMOM { get; init; }
+        private string MotDePasseMOM { get; init; }
         private string ModeleEnteteHTTPLocation { get; init; }
 
         public PersonnesControllerBase(IConfiguration config)
         {
             // Paramétrage base NoSQL
-            string conn = config.GetSection("PersistanceNoSQL").GetValue<string>("PersonnesConnectionString");
-            string NomBaseDeDonneesPersonnes = config.GetSection("PersistanceNoSQL").GetValue<string>("PersonnesDatabaseName");
+            string conn = config["PersistanceNoSQL__PersonnesConnectionString"];
+            string NomBaseDeDonneesPersonnes = config["PersistanceNoSQL__PersonnesDatabaseName"];
             Database = new MongoClient(conn).GetDatabase(NomBaseDeDonneesPersonnes);
-            NomCollectionPersonnes = config.GetSection("PersistanceNoSQL").GetValue<string>("PersonnesCollectionName");
+            NomCollectionPersonnes = config["PersistanceNoSQL__PersonnesCollectionName"];
             Collection = Database.GetCollection<DbPersonne>("personnes");
 
             // Paramétrage MOM
-            NomServeurMOM = config.GetSection("RabbitMQ")["HoteServeur"];
-            NomQueueMessages = config.GetSection("RabbitMQ")["NomQueueMessagesCreationPersonnes"];
+            NomServeurMOM = config["RabbitMQ__HoteServeur"];
+            NomQueueMessages = config["RabbitMQ__NomQueueMessagesCreationPersonnes"];
+            NomUtilisateurMOM = config["RabbitMQ__Utilisateur"] ?? "guest";
+            MotDePasseMOM = config["RabbitMQ__MotDePasse"] ?? "guest";
 
             // Paramétrage API
             ModeleEnteteHTTPLocation = config["ModeleEnteteHTTPLocation"];
@@ -95,7 +99,7 @@ namespace TestOIDCBlazorWASM.Work
                 personne.ObjectId = Guid.NewGuid().ToString("N");
             Collection.InsertOneAsync(personne);
 
-            var factory = new ConnectionFactory() { HostName = this.NomServeurMOM };
+            var factory = new ConnectionFactory() { HostName = this.NomServeurMOM, UserName = this.NomUtilisateurMOM, Password = this.MotDePasseMOM };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {

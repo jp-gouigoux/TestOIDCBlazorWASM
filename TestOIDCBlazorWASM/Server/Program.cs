@@ -23,7 +23,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 {
     // On doit pouvoir faire mieux avec un binder de configuration
     IConfigurationSection ConfigOIDC = builder.Configuration.GetSection("OIDC");
-    o.Authority = ConfigOIDC["Authority"];
+    o.Authority = builder.Configuration["OIDC__Authority"];
     o.Audience = ConfigOIDC["Audience"];
     // Les deux options à suivre ne sont à faire qu'en mode DEVELOPMENT, mais depuis que l'app doit être buildée
     // avant qu'on puisse avoir accès à app.Environment.IsDevelopment(), on ne peut plus utiliser ces codes
@@ -34,7 +34,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     o.RequireHttpsMetadata = false;
     //o.TokenValidationParameters.RoleClaimType = "user_roles";
 
-    o.TokenValidationParameters.RoleClaimType = ConfigOIDC["ModelePourRoleClaim"].Replace("${client_id}", ConfigOIDC["ClientId"]);
+    o.TokenValidationParameters.RoleClaimType = ConfigOIDC["ModelePourRoleClaim"].Replace("${client_id}", builder.Configuration["OIDC__ClientId"]);
     o.TokenValidationParameters.NameClaimType = ConfigOIDC["NameClaimType"]; // Fait sens ici car côté serveur, on utiliserait le nom pour la traçabilité
     o.TokenValidationParameters.ValidateIssuer = true;
     //o.SaveToken = true; // A voir dans la doc pour l'utilisation précise
