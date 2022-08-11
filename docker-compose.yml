@@ -1,0 +1,62 @@
+version: "3.6"
+
+services:
+
+  db:
+    image: mongo:4.4
+    container_name: db
+    ports:
+      - 27017:27017
+    networks:
+      - exerciceeni
+
+  mom:
+    image: rabbitmq:3-management
+    container_name: mom
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - exerciceeni
+
+  api:
+    image: testoidcblazorwasmapi
+    container_name: api
+    environment:
+      - Securite__CheminFichierCertificatClient=//certif//clienttestoidc.pfx
+    command: ["--RabbitMQ__HoteServeur=mom", "RabbitMQ__NomQueueMessagesCreationPersonnes=personnes", "--PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017", "--PersistanceNoSQL__PersonnesDatabaseName=personnes", "--PersistanceNoSQL__PersonnesCollectionName=personnes", "--Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient"]
+    secrets:
+      - pwdcertifclient
+    ports:
+      - 443:443
+    networks:
+      - exerciceeni
+
+  recepteur:
+    image: recepteurmessages
+    container_name: recep
+    environment:
+      - Securite__CheminFichierCertificatClient=//certif//clienttestoidc.pfx
+    command: ["--RabbitMQ__HoteServeur=mom", "RabbitMQ__NomQueueMessagesCreationPersonnes=personnes", "GED__URLAtomPub=http://localhost:9000/nuxeo/atom/cmis", "GED__ServiceAccountName=Administrator", "GED__ModeleURLExpositionDirecteDocuments=http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}", "--Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient"]
+    secrets:
+      - pwdcertifclient
+    networks:
+      - exerciceeni
+    stdin_open: true
+    tty: true
+
+  server:
+    image: testoidcblazorwasmserver
+    container_name: server
+    command: ["--RabbitMQ__HoteServeur=mom", "RabbitMQ__NomQueueMessagesCreationPersonnes=personnes", "--PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017", "--PersistanceNoSQL__PersonnesDatabaseName=personnes", "--PersistanceNoSQL__PersonnesCollectionName=personnes", "--OIDC_Authority=http://localhost:8080/realms/LivreENI/", "--OIDC_ClientId=appli-eni"]
+    ports:
+      - 443:443
+    networks:
+      - exerciceeni
+
+networks:
+  exerciceeni:
+
+secrets:
+  pwdcertifclient:
+    file: ./MotDePasseCertificatClient.secret
