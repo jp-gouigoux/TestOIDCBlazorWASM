@@ -38,6 +38,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     o.TokenValidationParameters.NameClaimType = ConfigOIDC["NameClaimType"]; // Fait sens ici car côté serveur, on utiliserait le nom pour la traçabilité
     o.TokenValidationParameters.ValidateIssuer = false;
 
+    //   Pour éviter erreur ci-dessous :
+    //   ===> ERREUR AUTHENTIFICATION JWTBEARER : System.InvalidOperationException: IDX20803: Unable to obtain configuration from: 'System.String'.
+    //--->System.IO.IOException: IDX20804: Unable to retrieve document from: 'System.String'.
+    //--->System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+    //--->System.Security.Authentication.AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: UntrustedRoot
+    //  at System.Net.Security.SslStream.SendAuthResetSignal(ProtocolToken message, ExceptionDispatchInfo exception)
+    //  at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
+    o.BackchannelHttpHandler = new HttpClientHandler { ServerCertificateCustomValidationCallback = delegate { return true; } };
+
     //o.SaveToken = true; // A voir dans la doc pour l'utilisation précise
     o.Events = new JwtBearerEvents()
     {
