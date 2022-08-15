@@ -36,18 +36,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
     o.TokenValidationParameters.RoleClaimType = ConfigOIDC["ModelePourRoleClaim"].Replace("${client_id}", builder.Configuration["OIDC__ClientId"]);
     o.TokenValidationParameters.NameClaimType = ConfigOIDC["NameClaimType"]; // Fait sens ici car côté serveur, on utiliserait le nom pour la traçabilité
-    o.TokenValidationParameters.ValidateIssuer = true;
+    o.TokenValidationParameters.ValidateIssuer = false;
+
     //o.SaveToken = true; // A voir dans la doc pour l'utilisation précise
-    //o.Events = new JwtBearerEvents()
-    //{
-    //    OnAuthenticationFailed = c =>
-    //    {
-    //        c.NoResult();
-    //        c.Response.StatusCode = 500;
-    //        c.Response.ContentType = "text/plain";
-    //        return c.Response.WriteAsync(c.Exception.ToString()); // A ne laisser que pour le mode DEVELOPMENT
-    //    }
-    //};
+    o.Events = new JwtBearerEvents()
+    {
+        OnAuthenticationFailed = c =>
+        {
+            c.NoResult();
+            c.Response.StatusCode = 500;
+            c.Response.ContentType = "text/plain";
+            return c.Response.WriteAsync(c.Exception.ToString()); // A ne laisser que pour le mode DEVELOPMENT
+        }
+    };
+}).AddCookie(options =>
+{
+    // NE SERT APPAREMMENT PAS A REGLER LE SOUCI
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+    options.SlidingExpiration = true;
+    //options.Cookie.HttpOnly = true;
 });
 
 builder.Services.AddTransient<IClaimsTransformation, ClaimsTransformer>();
@@ -64,6 +72,13 @@ builder.Services.AddAuthorization(o =>
     o.AddPolicy("administrateur", policy => policy.RequireClaim(TargetUserRolesClaimName, "administrateur"));
     o.AddPolicy("lecteur", policy => policy.RequireClaim(TargetUserRolesClaimName, "lecteur"));
 });
+
+//builder.WebHost.UseKestrel(opts =>
+//{
+//    opts.ListenAnyIP(5000);
+//});
+
+builder.WebHost.UseUrls("http://+:5000");
 
 // Pour info, on peut brancher Keycloak comme proxy d'un IDP Microsoft OIDC comme Azure DC, mais pour récupérer
 // les claims pour aller sur Graph, il faut faire une bidouille expliquée sur https://keycloak.discourse.group/t/is-it-possible-to-use-an-keycloak-accesstoken-to-get-access-to-the-microsoft-graph/6831/3
@@ -82,7 +97,7 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
