@@ -62,19 +62,26 @@ namespace TestOIDCBlazorWASM.Client
                     // TODO : Il reste un bug non bloquant sur le fait que les claims rajoutés sont systématiquement doublés, sans que le débogueur ne passe plusieurs fois ici. A regarder avec des logs, potentiellement plus fiables.
                     var resourceaccess = identity.FindAll(PrefixeRoleClaim);
                     string Contenu = resourceaccess.First().Value;
-                    JsonDocument json = JsonDocument.Parse(resourceaccess.First().Value);
-                    JsonElement elem = json.RootElement;
-                    if (json.RootElement.ValueKind == JsonValueKind.Array)
+                    try
                     {
-                        foreach (JsonElement e in json.RootElement.EnumerateArray())
-                            if (e.TryGetProperty(OIDCClientId, out var prop))
-                            { 
-                                elem = e;
-                                break;
-                            }
+                        JsonDocument json = JsonDocument.Parse(resourceaccess.First().Value);
+                        JsonElement elem = json.RootElement;
+                        if (json.RootElement.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (JsonElement e in json.RootElement.EnumerateArray())
+                                if (e.TryGetProperty(OIDCClientId, out var prop))
+                                {
+                                    elem = e;
+                                    break;
+                                }
+                        }
+                        foreach (JsonElement role in elem.GetProperty(OIDCClientId).GetProperty(SuffixeRoleClaim).EnumerateArray())
+                        {
+                            Console.WriteLine("Ajout du roleclaim {0} = {1}", options.RoleClaim, role.GetString() ?? String.Empty);
+                            identity.AddClaim(new Claim(options.RoleClaim, role.GetString() ?? String.Empty));
+                        }
                     }
-                    foreach (JsonElement role in elem.GetProperty(OIDCClientId).GetProperty(SuffixeRoleClaim).EnumerateArray())
-                        identity.AddClaim(new Claim(options.RoleClaim, role.GetString() ?? String.Empty));
+                    catch { Console.WriteLine("Erreur dans la récupération des rôles liés au client OIDC"); }
                 }
                 else
                 {
