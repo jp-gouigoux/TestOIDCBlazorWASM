@@ -2,60 +2,144 @@ version: "3.6"
 
 services:
 
-  db:
-    image: mongo:4.4
-    container_name: db
-    ports:
-      - 27017:27017
-    networks:
-      - exerciceeni
+  iam:
+    image: quay.io/keycloak/keycloak:18.0.2
+    container_name: iam
+    environment:
+      - KEYCLOAK_ADMIN=armoire
+      - KEYCLOAK_ADMIN_PASSWORD=vBWtB2PloopC042cszXZ
+    command:
+      - start-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/admin"]
+      interval: 3s
+      timeout: 1s
+      retries: 10
+      start_period: 10s
 
   mom:
     image: rabbitmq:3-management
     container_name: mom
-    ports:
-      - 15672:15672
-      - 5672:5672
-    networks:
-      - exerciceeni
+    environment:
+      - RABBITMQ_DEFAULT_USER=rapido
+      - RABBITMQ_DEFAULT_PASS=k5rXH6wmBhE2bukfXFsz
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 3s
+      timeout: 1s
+      retries: 10
+      start_period: 5s
+
+  db:
+    image: mongo:4.4
+    container_name: db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "'db.runCommand(\"ping\").ok'", "localhost:27017/test", "--quiet"]
+      interval: 3s
+      timeout: 1s
+      retries: 10
+      start_period: 1s
+  
+  ged:
+    image: nuxeo
+    container_name: ged
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 3s
+      timeout: 1s
+      retries: 10
+      start_period: 20s
+
+  recep:
+    image: recepteurmessages
+    container_name: recep
+    build:
+      context: .
+      dockerfile: RecepteurMessages/Dockerfile
+      args:
+        - MAXINDEX_XKCD=50
+    environment:
+      - Securite__CheminFichierCertificatClient=/certif/clienttestoidc.pfx
+      - URLBaseServiceAPI=http://api
+      - ASPNETCORE_ENVIRONMENT=Development
+    command:
+      - --RabbitMQ__HoteServeur=mom
+      - --RabbitMQ__Utilisateur=rapido
+      - --RabbitMQ__MotDePasse=k5rXH6wmBhE2bukfXFsz
+      - --RabbitMQ__NomQueueMessagesCreationPersonnes=personnes
+      - --GED__URLAtomPub=http://ged:9000/nuxeo/atom/cmis
+      - --GED__ServiceAccountName=Administrator
+      - --GED__ModeleURLExpositionDirecteDocuments=http://ged:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}
+      - --Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient
+    secrets:
+      - pwdcertifclient
+    stdin_open: true
+    tty: true
+    volumes:
+      - /mnt/c/Users/jpgou/OneDrive/Securite/ClientCertificate:/certif:ro
+    depends_on:
+      mom:
+        condition: service_healthy
+      ged:
+        condition: service_healthy
+      api:
+        condition: service_started
 
   api:
     image: testoidcblazorwasmapi
     container_name: api
+    build:
+      context: .
+      dockerfile: TestOIDCBlazorWASM.API/Dockerfile
     environment:
-      - Securite__CheminFichierCertificatClient=//certif//clienttestoidc.pfx
-    command: ["--RabbitMQ__HoteServeur=mom", "RabbitMQ__NomQueueMessagesCreationPersonnes=personnes", "--PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017", "--PersistanceNoSQL__PersonnesDatabaseName=personnes", "--PersistanceNoSQL__PersonnesCollectionName=personnes", "--Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient"]
+      - Securite__CheminFichierCertificatClient=/certif/clienttestoidc.pfx
+      - ASPNETCORE_ENVIRONMENT=Development
+    command: 
+      - --RabbitMQ__HoteServeur=mom
+      - --RabbitMQ__NomQueueMessagesCreationPersonnes=personnes
+      - --PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017
+      - --PersistanceNoSQL__PersonnesDatabaseName=personnes
+      - --PersistanceNoSQL__PersonnesCollectionName=personnes
+      - --Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient
     secrets:
       - pwdcertifclient
-    ports:
-      - 443:443
-    networks:
-      - exerciceeni
-
-  recepteur:
-    image: recepteurmessages
-    container_name: recep
-    environment:
-      - Securite__CheminFichierCertificatClient=//certif//clienttestoidc.pfx
-    command: ["--RabbitMQ__HoteServeur=mom", "RabbitMQ__NomQueueMessagesCreationPersonnes=personnes", "GED__URLAtomPub=http://localhost:9000/nuxeo/atom/cmis", "GED__ServiceAccountName=Administrator", "GED__ModeleURLExpositionDirecteDocuments=http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}", "--Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient"]
-    secrets:
-      - pwdcertifclient
-    networks:
-      - exerciceeni
-    stdin_open: true
-    tty: true
+    volumes:
+      - /mnt/c/Users/jpgou/OneDrive/Securite/ClientCertificate:/certif:ro
+    depends_on:
+      mom:
+        condition: service_healthy
+      db:
+        condition: service_healthy
 
   server:
     image: testoidcblazorwasmserver
     container_name: server
-    command: ["--RabbitMQ__HoteServeur=mom", "RabbitMQ__NomQueueMessagesCreationPersonnes=personnes", "--PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017", "--PersistanceNoSQL__PersonnesDatabaseName=personnes", "--PersistanceNoSQL__PersonnesCollectionName=personnes", "--OIDC_Authority=http://localhost:8080/realms/LivreENI/", "--OIDC_ClientId=appli-eni"]
+    build:
+      context: .
+      dockerfile: TestOIDCBlazorWASM/Server/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    command: 
+      - --RabbitMQ__HoteServeur=mom
+      - --RabbitMQ__Utilisateur=rapido
+      - --RabbitMQ__MotDePasse=k5rXH6wmBhE2bukfXFsz
+      - --RabbitMQ__NomQueueMessagesCreationPersonnes=personnes
+      - --PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017
+      - --PersistanceNoSQL__PersonnesDatabaseName=personnes
+      - --PersistanceNoSQL__PersonnesCollectionName=personnes
+      - --OIDC__Authority=http://iam:8080/realms/LivreENI/
+      - --OIDC__ClientId=appli-eni
+    depends_on:
+      mom:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      iam:
+        condition: service_healthy
+      recep:
+        condition: service_started
     ports:
-      - 443:443
-    networks:
-      - exerciceeni
-
-networks:
-  exerciceeni:
+      - 5000:5000
 
 secrets:
   pwdcertifclient:
