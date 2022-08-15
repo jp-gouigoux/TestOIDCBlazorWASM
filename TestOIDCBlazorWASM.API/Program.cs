@@ -56,9 +56,13 @@ builder.Services.AddAuthentication(CertificateAuthenticationDefaults.Authenticat
 // La transformation du PFX en PEM change tout de même le message d'erreur de Postman de "Unable to verify the first certificate" à "socket hang up"
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
+    string MotDePasseCertificatClient = builder.Configuration.GetSection("Securite")["MotDePasseCertificatClient"];
+    string FichierMotDePasse = builder.Configuration["Securite__FichierMotDePasseCertificatClient"];
+    if (!string.IsNullOrEmpty(FichierMotDePasse))
+        MotDePasseCertificatClient = File.ReadAllText(FichierMotDePasse);
     var cert = new X509Certificate2(
         builder.Configuration.GetSection("Securite")["CheminFichierCertificatClient"],
-        builder.Configuration.GetSection("Securite")["MotDePasseCertificatClient"]);
+        MotDePasseCertificatClient);
     options.ConfigureHttpsDefaults(o =>
     {
         o.ServerCertificate = cert;
