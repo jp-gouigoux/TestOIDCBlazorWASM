@@ -25,5 +25,5 @@ COPY --from=publish /app/publish .
 ENV OIDC__TargetUserRolesClaimName=user_roles
 ENV OIDC__Audience=account
 ENV OIDC__NameClaimType=preferred_username
-ENV OIDC__ModelePourRoleClaim=resource_access.${client_id}.roles
+ENV OIDC__ModelePourRoleClaim=resource_access.\$\{client_id\}.roles
 ENTRYPOINT ["dotnet", "TestOIDCBlazorWASM.Server.dll"]
