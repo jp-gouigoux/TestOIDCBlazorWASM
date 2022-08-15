@@ -25,7 +25,7 @@ namespace RecepteurMessages
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 handler.SslProtocols = SslProtocols.Tls12;
                 string MotDePasseCertificatClient = Configuration.GetSection("Securite")["MotDePasseCertificatClient"];
-                string FichierMotDePasse = Configuration.GetSection("Securite")["FichierMotDePasseCertificatClient"];
+                string FichierMotDePasse = Configuration["Securite__FichierMotDePasseCertificatClient"];
                 if (!string.IsNullOrEmpty(FichierMotDePasse))
                     MotDePasseCertificatClient = File.ReadAllText(FichierMotDePasse);
                 var cert = new X509Certificate2(
