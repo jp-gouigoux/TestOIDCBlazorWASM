@@ -148,8 +148,6 @@ services:
       #recep:
       #  condition: service_started
     network_mode: "host"
-    ports:
-      - 5000:5000
 
 secrets:
   pwdcertifclient:
