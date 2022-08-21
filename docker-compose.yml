@@ -24,8 +24,6 @@ services:
       timeout: 1s
       retries: 10
       start_period: 1s
-    ports:
-      - "27017:27017"
 
   ged:
     image: nuxeo:10.10
