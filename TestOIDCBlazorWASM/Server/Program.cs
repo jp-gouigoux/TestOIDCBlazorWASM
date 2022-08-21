@@ -87,7 +87,7 @@ builder.Services.AddAuthorization(o =>
 //    opts.ListenAnyIP(5000);
 //});
 
-builder.WebHost.UseUrls("http://+:5000");
+//builder.WebHost.UseUrls("http://+:5000");
 
 // Pour info, on peut brancher Keycloak comme proxy d'un IDP Microsoft OIDC comme Azure DC, mais pour récupérer
 // les claims pour aller sur Graph, il faut faire une bidouille expliquée sur https://keycloak.discourse.group/t/is-it-possible-to-use-an-keycloak-accesstoken-to-get-access-to-the-microsoft-graph/6831/3
