@@ -119,8 +119,6 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
-      iam:
-        condition: service_healthy
       recep:
         condition: service_started
 
