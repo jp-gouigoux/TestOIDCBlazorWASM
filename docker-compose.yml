@@ -26,7 +26,7 @@ services:
       start_period: 1s
   
   ged:
-    image: nuxeo
+    image: nuxeo:10.10
     container_name: ged
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/"]
