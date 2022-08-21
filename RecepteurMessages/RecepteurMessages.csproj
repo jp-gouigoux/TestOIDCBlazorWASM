@@ -21,6 +21,8 @@
 
   <ItemGroup>
     <PackageReference Include="Apache.DotCMIS" Version="0.6.0" />
+    <PackageReference Include="HarfBuzzSharp" Version="2.8.2.1" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />

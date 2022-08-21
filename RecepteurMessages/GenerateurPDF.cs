@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using QuestPDF.Drawing;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -28,10 +29,15 @@ namespace RecepteurMessages
             string? urlPhoto = json.RootElement.GetProperty("img").GetString();
             Task<byte[]> image = client.GetByteArrayAsync(urlPhoto);
 
+            // Chargement d'une fonte
+            FontManager.RegisterFont(File.OpenRead("Lato-Regular.ttf"));
+            FontManager.RegisterFont(File.OpenRead("Lato-Semibold.ttf"));
+
             // Génération d'un document complexe
             Document doc = Document.Create(document => {
                 document.Page(page =>
                 {
+                    page.DefaultTextStyle(x => x.FontFamily("Lato"));
                     page.Margin(25, Unit.Millimetre);
                     page.Header().Text(p.Prenom + " " + p.Patronyme).FontSize(32).SemiBold().FontColor(Colors.Blue.Medium);
                     page.Content().Padding(20, Unit.Millimetre).Column(c =>
