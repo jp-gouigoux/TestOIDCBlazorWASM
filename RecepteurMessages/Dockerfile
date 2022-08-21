@@ -6,7 +6,7 @@ RUN dotnet restore "RecepteurMessages/RecepteurMessages.csproj"
 COPY . .
 WORKDIR "/src/RecepteurMessages"
 RUN dotnet build "RecepteurMessages.csproj" -c Release -o /app/build
-RUN dotnet publish "RecepteurMessages.csproj" -c Release -o /app/publish -p:BlazorEnableCompression=false
+RUN dotnet publish "RecepteurMessages.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/runtime:6.0 AS final
 ARG URL_XKCD=https://xkcd.com/{indexImage}/info.0.json
