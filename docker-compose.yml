@@ -41,7 +41,6 @@ services:
 
   recep:
     image: recepteurmessages
-    container_name: recep
     build:
       context: .
       dockerfile: RecepteurMessages/Dockerfile
@@ -51,6 +50,7 @@ services:
       - Securite__CheminFichierCertificatClient=/certif/clienttestoidc.pfx
       - URLBaseServiceAPI=https://api
       - ASPNETCORE_ENVIRONMENT=Development
+      - DelaiSupplementaireTraitementEnMillisecondes=10000
     command:
       - --RabbitMQ__HoteServeur=mom
       - --RabbitMQ__Utilisateur=rapido
@@ -65,6 +65,8 @@ services:
       - pwdcertifclient
     stdin_open: true
     tty: true
+    deploy:
+      replicas: 3
     volumes:
       - /mnt/c/Users/jpgou/OneDrive/Securite/ClientCertificate:/certif:ro
     depends_on:
