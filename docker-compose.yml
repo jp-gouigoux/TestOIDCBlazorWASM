@@ -28,6 +28,8 @@ services:
   ged:
     image: nuxeo:10.10
     container_name: ged
+    ports:
+      - "9000:8080"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/"]
       interval: 3s
@@ -52,9 +54,10 @@ services:
       - --RabbitMQ__Utilisateur=rapido
       - --RabbitMQ__MotDePasse=k5rXH6wmBhE2bukfXFsz
       - --RabbitMQ__NomQueueMessagesCreationPersonnes=personnes
-      - --GED__URLAtomPub=http://ged:9000/nuxeo/atom/cmis
+      - --GED__URLAtomPub=http://ged:8080/nuxeo/atom/cmis
       - --GED__ServiceAccountName=Administrator
-      - --GED__ModeleURLExpositionDirecteDocuments=http://ged:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}
+      - --GED__ServiceAccountPassword=Administrator
+      - --GED__ModeleURLExpositionDirecteDocuments=http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}
       - --Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient
     secrets:
       - pwdcertifclient
