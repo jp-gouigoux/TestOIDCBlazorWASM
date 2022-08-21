@@ -24,14 +24,13 @@ builder.Services.AddControllers(options =>
 builder.Services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
 {
     options.AllowedCertificateTypes = CertificateTypes.All;
-    //options.AllowedCertificateTypes = CertificateTypes.SelfSigned;
     options.Events = new CertificateAuthenticationEvents
     {
         OnCertificateValidated = context =>
         {
             string empreinteReference = builder.Configuration.GetSection("Securite")["EmpreinteCertificatClient"];
             string empreinteRecue = context.ClientCertificate.Thumbprint;
-            if (string.Compare(empreinteRecue, empreinteReference) == 0)
+            if (string.Compare(empreinteRecue, empreinteReference, true) == 0)
                 context.Success();
             else
                 context.Fail("Invalid certificate");
@@ -46,12 +45,6 @@ builder.Services.AddAuthentication(CertificateAuthenticationDefaults.Authenticat
 });
 
 // Si ça ne marche pas derrière un ingress K8S nginx, il faudra jeter un oeil à https://docs.microsoft.com/en-us/aspnet/core/security/authentication/certauth?view=aspnetcore-6.0
-//builder.Services.Configure<KestrelServerOptions>(options =>
-//{
-//    options.ConfigureHttpsDefaults(options =>
-//        options.ClientCertificateMode = ClientCertificateMode.RequireCertificate);
-//});
-
 // Mode fonctionnant OK pour le client navigateur, mais pas avec Postman
 // La transformation du PFX en PEM change tout de même le message d'erreur de Postman de "Unable to verify the first certificate" à "socket hang up"
 builder.Services.Configure<KestrelServerOptions>(options =>
@@ -63,6 +56,7 @@ builder.Services.Configure<KestrelServerOptions>(options =>
     var cert = new X509Certificate2(
         builder.Configuration.GetSection("Securite")["CheminFichierCertificatClient"],
         MotDePasseCertificatClient);
+
     options.ConfigureHttpsDefaults(o =>
     {
         o.ServerCertificate = cert;
@@ -71,8 +65,6 @@ builder.Services.Configure<KestrelServerOptions>(options =>
 });
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
 
 app.UseHttpsRedirection();
 
