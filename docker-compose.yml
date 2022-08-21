@@ -114,6 +114,8 @@ services:
       - --PersistanceNoSQL__PersonnesCollectionName=personnes
       - --OIDC__Authority=https://iamlivreeni.francecentral.cloudapp.azure.com/realms/LivreENI/
       - --OIDC__ClientId=appli-eni
+    ports:
+      - "88:80"
     depends_on:
       mom:
         condition: service_healthy
