@@ -17,7 +17,7 @@ WORKDIR "/src/TestOIDCBlazorWASM/Server"
 RUN dotnet build "TestOIDCBlazorWASM.Server.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "TestOIDCBlazorWASM.Server.csproj" -c Release -o /app/publish
+RUN dotnet publish "TestOIDCBlazorWASM.Server.csproj" -c Release -o /app/publish -p:BlazorEnableCompression=false
 
 FROM base AS final
 WORKDIR /app
