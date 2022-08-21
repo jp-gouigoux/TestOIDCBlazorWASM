@@ -29,7 +29,8 @@
     "Docker": {
       "commandName": "Docker",
       "commandLineArgs": "--RabbitMQ__HoteServeur my-rabbit --RabbitMQ__NomQueueMessagesCreationPersonnes personnes --RabbitMQ__Utilisateur rapido --RabbitMQ__MotDePasse k5rXH6wmBhE2bukfXFsz --PersistanceNoSQL__PersonnesConnectionString mongodb://db:27017 --PersistanceNoSQL__PersonnesDatabaseName personnes --PersistanceNoSQL__PersonnesCollectionName personnes",
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/weatherforecast",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/api/personnes/status",
+      "launchBrowser": true,
       "environmentVariables": {
         "Securite__MotDePasseCertificatClient": "oLG78hFS65gBNfx89PmPPp",
         "Securite__CheminFichierCertificatClient": "/certif/clienttestoidc.pfx",
