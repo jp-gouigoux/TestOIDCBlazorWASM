@@ -19,7 +19,7 @@ namespace RecepteurMessages
             parameters[DotCMIS.SessionParameter.BindingType] = BindingType.AtomPub;
             parameters[DotCMIS.SessionParameter.AtomPubUrl] = Configuration["GED__URLAtomPub"];
             parameters[DotCMIS.SessionParameter.User] = Configuration["GED__ServiceAccountName"];
-            parameters[DotCMIS.SessionParameter.Password] = Configuration.GetSection("GED")["ServiceAccountPassword"];
+            parameters[DotCMIS.SessionParameter.Password] = Configuration["GED__ServiceAccountPassword"];
             SessionFactory factory = SessionFactory.NewInstance();
             ISession session = factory.GetRepositories(parameters)[0].CreateSession();
 
