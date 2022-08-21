@@ -112,7 +112,7 @@ services:
       - --PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017
       - --PersistanceNoSQL__PersonnesDatabaseName=personnes
       - --PersistanceNoSQL__PersonnesCollectionName=personnes
-      - --OIDC__Authority=https://iamlivreeni.francecentral.cloudapp.azure.com:8080/realms/LivreENI/
+      - --OIDC__Authority=https://iamlivreeni.francecentral.cloudapp.azure.com/realms/LivreENI/
       - --OIDC__ClientId=appli-eni
     depends_on:
       mom:

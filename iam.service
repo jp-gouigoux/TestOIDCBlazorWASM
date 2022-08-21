@@ -1,0 +1,15 @@
+[Unit]
+Description=IAM
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=forking
+User=azureuser
+ExecStart=/usr/bin/docker-compose -f /home/azureuser/docker-compose-iam.yml up -d
+ExecStop=/usr/bin/docker-compose -f /home/azureuser/docker-compose-iam.yml down
+TimeoutSec=0
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
