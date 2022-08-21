@@ -47,7 +47,7 @@ services:
         - MAXINDEX_XKCD=50
     environment:
       - Securite__CheminFichierCertificatClient=/certif/clienttestoidc.pfx
-      - URLBaseServiceAPI=http://api
+      - URLBaseServiceAPI=https://api
       - ASPNETCORE_ENVIRONMENT=Development
     command:
       - --RabbitMQ__HoteServeur=mom

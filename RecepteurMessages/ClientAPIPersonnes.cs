@@ -32,6 +32,7 @@ namespace RecepteurMessages
                     Configuration.GetSection("Securite")["CheminFichierCertificatClient"],
                     MotDePasseCertificatClient);
                 handler.ClientCertificates.Add(cert);
+                handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
                 client = new HttpClient(handler);
             }
 
