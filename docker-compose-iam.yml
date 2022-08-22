@@ -28,7 +28,7 @@ services:
     ports:
       - 80:80
 
-iam:
+  iam:
     image: quay.io/keycloak/keycloak:18.0.2
     container_name: iam
     environment:
