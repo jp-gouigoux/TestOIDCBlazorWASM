@@ -4,7 +4,6 @@ services:
 
   db:
     image: postgres:14.5
-    container_name: db
     user: postgres
     environment:
       - POSTGRES_USER=postgres
@@ -19,39 +18,32 @@ services:
       retries: 6
       start_period: 5s
 
-  pgadm:
-    image: dpage/pgadmin4
-    container_name: pgadm
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=jp@gouigoux.com
-      - PGADMIN_DEFAULT_PASSWORD=EZ1izLQqzbIsOGVUVAYs
-    ports:
-      - 80:80
-
   iam:
     image: quay.io/keycloak/keycloak:18.0.2
-    container_name: iam
     environment:
       - KEYCLOAK_ADMIN=armoire
       - KEYCLOAK_ADMIN_PASSWORD=vBWtB2PloopC042cszXZ
-      - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/server.crt.pem
-      - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/server.key.pem
+      - KC_HTTPS_CERTIFICATE_FILE=/run/secrets/crt
+      - KC_HTTPS_CERTIFICATE_KEY_FILE=/run/secrets/key
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://db/keycloak
       - KC_DB_USERNAME=postgres
       - KC_DB_PASSWORD=KY9CO8sHshzM5YxfLtzL
     command:
       - start-dev
-      - --hostname=iamlivreeni.francecentral.cloudapp.azure.com
-    volumes:
-      - /home/azureuser/server.crt.pem:/opt/keycloak/conf/server.crt.pem
-      - /home/azureuser/server.key.pem:/opt/keycloak/conf/server.key.pem
+      - --hostname=dockereni.francecentral.cloudapp.azure.com
+    secrets:
+      - crt
+      - key
     ports:
       - "443:8443"
-    depends_on:
-      db:
-        condition: service_healthy
 
 volumes:
   datadb:
     driver: local
+
+secrets:
+  crt:
+    file: /home/azureuser/server.crt.pem
+  key:
+    file: /home/azureuser/server.key.pem

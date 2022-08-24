@@ -4,7 +4,6 @@ services:
 
   mom:
     image: rabbitmq:3-management
-    container_name: mom
     environment:
       - RABBITMQ_DEFAULT_USER=rapido
       - RABBITMQ_DEFAULT_PASS=k5rXH6wmBhE2bukfXFsz
@@ -17,7 +16,6 @@ services:
 
   db:
     image: mongo:4.4
-    container_name: db
     healthcheck:
       test: ["CMD", "mongo", "--eval", "'db.runCommand(\"ping\").ok'", "localhost:27017/personnes", "--quiet"]
       interval: 3s
@@ -27,7 +25,6 @@ services:
 
   ged:
     image: nuxeo:10.10
-    container_name: ged
     ports:
       - "9000:8080"
     healthcheck:
@@ -38,17 +35,16 @@ services:
       start_period: 20s
 
   recep:
-    image: recepteurmessages
+    image: jpgouigoux/recepteurmessages:1.3
     build:
       context: .
       dockerfile: RecepteurMessages/Dockerfile
       args:
         - MAXINDEX_XKCD=50
     environment:
-      - Securite__CheminFichierCertificatClient=/certif/clienttestoidc.pfx
+      - Securite__CheminFichierCertificatClient=/run/secrets/certifclient
       - URLBaseServiceAPI=https://api
       - ASPNETCORE_ENVIRONMENT=Development
-      - DelaiSupplementaireTraitementEnMillisecondes=10000
     command:
       - --RabbitMQ__HoteServeur=mom
       - --RabbitMQ__Utilisateur=rapido
@@ -57,32 +53,23 @@ services:
       - --GED__URLAtomPub=http://ged:8080/nuxeo/atom/cmis
       - --GED__ServiceAccountName=Administrator
       - --GED__ServiceAccountPassword=Administrator
-      - --GED__ModeleURLExpositionDirecteDocuments=http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}
+      - --GED__ModeleURLExpositionDirecteDocuments=http://dockereni.francecentral.cloudapp.azure.com:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={i>
       - --Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient
     secrets:
       - pwdcertifclient
+      - certifclient
     stdin_open: true
     tty: true
     deploy:
       replicas: 3
-    volumes:
-      - /mnt/c/Users/jpgou/OneDrive/Securite/ClientCertificate:/certif:ro
-    depends_on:
-      mom:
-        condition: service_healthy
-      ged:
-        condition: service_healthy
-      api:
-        condition: service_started
 
   api:
-    image: testoidcblazorwasmapi
-    container_name: api
+    image: jpgouigoux/testoidcblazorwasmapi:1.3
     build:
       context: .
       dockerfile: TestOIDCBlazorWASM.API/Dockerfile
     environment:
-      - Securite__CheminFichierCertificatClient=/certif/clienttestoidc.pfx
+      - Securite__CheminFichierCertificatClient=/run/secrets/certifclient
       - ASPNETCORE_ENVIRONMENT=Development
     command:
       - --PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017
@@ -92,23 +79,16 @@ services:
       - --Securite__EmpreinteCertificatClient=41E81F27F42F381B7406129DAAB055802F9A64B9
     secrets:
       - pwdcertifclient
-    volumes:
-      - /mnt/c/Users/jpgou/OneDrive/Securite/ClientCertificate:/certif:ro
-    depends_on:
-      mom:
-        condition: service_healthy
-      db:
-        condition: service_healthy
+      - certifclient
 
   server:
-    image: testoidcblazorwasmserver
-    container_name: server
+    image: jpgouigoux/testoidcblazorwasmserver:1.3
     build:
       context: .
       dockerfile: TestOIDCBlazorWASM/Server/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-    command: 
+    command:
       - --RabbitMQ__HoteServeur=mom
       - --RabbitMQ__Utilisateur=rapido
       - --RabbitMQ__MotDePasse=k5rXH6wmBhE2bukfXFsz
@@ -116,18 +96,13 @@ services:
       - --PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017
       - --PersistanceNoSQL__PersonnesDatabaseName=personnes
       - --PersistanceNoSQL__PersonnesCollectionName=personnes
-      - --OIDC__Authority=https://iamlivreeni.francecentral.cloudapp.azure.com/realms/LivreENI/
+      - --OIDC__Authority=https://dockereni.francecentral.cloudapp.azure.com/realms/LivreENI/
       - --OIDC__ClientId=appli-eni
     ports:
-      - "88:80"
-    depends_on:
-      mom:
-        condition: service_healthy
-      db:
-        condition: service_healthy
-      recep:
-        condition: service_started
+      - "80:80"
 
 secrets:
   pwdcertifclient:
     file: ./MotDePasseCertificatClient.secret
+  certifclient:
+    file: ./clienttestoidc.pfx
