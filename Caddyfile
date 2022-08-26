@@ -1,0 +1,4 @@
+dockereni.francecentral.cloudapp.azure.com
+
+reverse_proxy /nuxeo/* ged:8080
+reverse_proxy server:5000

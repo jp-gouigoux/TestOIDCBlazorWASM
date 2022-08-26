@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestOIDCBlazorWASM.Work", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{6F8A051C-1D13-480B-BCFD-1ABABF1F5C8D}"
 	ProjectSection(SolutionItems) = preProject
+		Caddyfile = Caddyfile
 		docker-compose-iam.yml = docker-compose-iam.yml
+		docker-compose-full.yml = docker-compose-full.yml
 		docker-compose.yml = docker-compose.yml
 		iam.service = iam.service
 		MotDePasseCertificatClient.secret = MotDePasseCertificatClient.secret
