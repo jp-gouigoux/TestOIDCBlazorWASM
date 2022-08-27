@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: tobw
+  name: ingress
+  annotations:
+    kubernetes.io/ingress.class: addon-http-application-routing
+spec:
+  defaultBackend:
+    service:
+      name: server-service
+      port: 
+        number: 5000
+  rules:
+  - host: tobw.d0b4c61afc1e40ceb652.francecentral.aksapp.io
+    http:
+      paths:
+      - path: /nuxeo
+        pathType: Prefix
+        backend:
+          service: 
+            name: ged-service
+            port: 
+              number: 8080

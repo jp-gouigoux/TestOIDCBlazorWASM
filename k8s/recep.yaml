@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: tobw
+  name: recep-deploy
+  labels:
+    app: recep
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: recep
+  template:
+    metadata:
+      labels:
+        app: recep
+    spec:
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: certifclient
+      containers:
+      - name: recep
+        image: registreakseni.azurecr.io/recepteurmessages:1.4
+        imagePullPolicy: Always
+        stdin: true
+        tty: true
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        env:
+        - name: Securite__CheminFichierCertificatClient
+          value: /etc/secret-volume/fichier
+        - name: Securite__MotDePasseCertificatClient
+          valueFrom:
+            secretKeyRef:
+              name: certifclient
+              key: motdepasse
+              optional: false
+        envFrom:
+        - configMapRef:
+            name: tobw-params
+        args: ["--RabbitMQ__HoteServeur=mom-service.tobw.svc", "--RabbitMQ__Utilisateur=rapido", "--RabbitMQ__MotDePasse=k5rXH6wmBhE2bukfXFsz", "--RabbitMQ__NomQueueMessagesCreationPersonnes=personnes", "--GED__URLAtomPub=http://ged:8080/nuxeo/atom/cmis", "--GED__ServiceAccountName=Administrator", "--GED__ServiceAccountPassword=Administrator", "--GED__ModeleURLExpositionDirecteDocuments=https://dockereni.francecentral.cloudapp.azure.com/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}"]
+        volumeMounts:
+        - name: secret-volume
+          readOnly: true
+          mountPath: "/etc/secret-volume"

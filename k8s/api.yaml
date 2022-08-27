@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: tobw
+  name: api-deploy
+  labels:
+    app: api
+spec:
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: certifclient
+      containers:
+      - name: api
+        image: registreakseni.azurecr.io/testoidcblazorwasmapi:1.4
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 443
+        env:
+        - name: Securite__CheminFichierCertificatClient
+          value: /etc/secret-volume/fichier
+        - name: Securite__MotDePasseCertificatClient
+          valueFrom:
+            secretKeyRef:
+              name: certifclient
+              key: motdepasse
+              optional: false
+        args: ["--PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017", "--PersistanceNoSQL__PersonnesDatabaseName=personnes", "--PersistanceNoSQL__PersonnesCollectionName=personnes", "--Securite__EmpreinteCertificatClient=41E81F27F42F381B7406129DAAB055802F9A64B9"]
+        volumeMounts:
+        - name: secret-volume
+          readOnly: true
+          mountPath: "/etc/secret-volume"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: tobw
+  name: api-service
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 443
+  selector:
+    app: api

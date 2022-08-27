@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: tobw
+  name: mom-deploy
+  labels:
+    app: mom
+spec:
+  selector:
+    matchLabels:
+      app: mom
+  template:
+    metadata:
+      labels:
+        app: mom
+    spec:
+      containers:
+      - name: mom
+        image: rabbitmq:3-management
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            cpu: 250m
+            memory: 1024Mi
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          valueFrom:
+            secretKeyRef:
+              name: mom-secrets
+              key: user
+        - name: RABBITMQ_DEFAULT_PASS
+          valueFrom:
+            secretKeyRef:
+              name: mom-secrets
+              key: pass
+        ports:
+        - containerPort: 5672
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: tobw
+  name: mom-service
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 5672
+    targetPort: 5672
+  selector:
+    app: mom

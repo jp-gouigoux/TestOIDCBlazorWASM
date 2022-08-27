@@ -18,8 +18,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{6F8A051C-1D13-480B-BCFD-1ABABF1F5C8D}"
 	ProjectSection(SolutionItems) = preProject
 		Caddyfile = Caddyfile
-		docker-compose-iam.yml = docker-compose-iam.yml
 		docker-compose-full.yml = docker-compose-full.yml
+		docker-compose-iam.yml = docker-compose-iam.yml
 		docker-compose.yml = docker-compose.yml
 		iam.service = iam.service
 		MotDePasseCertificatClient.secret = MotDePasseCertificatClient.secret
@@ -41,6 +41,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{DBA339
 		images\scenario5.png = images\scenario5.png
 		images\scenario6.png = images\scenario6.png
 		images\welcomechemistry.png = images\welcomechemistry.png
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "k8s", "k8s", "{F00792F2-CCB6-44D1-837B-991823149B05}"
+	ProjectSection(SolutionItems) = preProject
+		k8s\api.yaml = k8s\api.yaml
+		k8s\configmap.yaml = k8s\configmap.yaml
+		k8s\db.yaml = k8s\db.yaml
+		k8s\ged.yaml = k8s\ged.yaml
+		k8s\ingress.yaml = k8s\ingress.yaml
+		k8s\mom.yaml = k8s\mom.yaml
+		k8s\namespace.yaml = k8s\namespace.yaml
+		k8s\recep.yaml = k8s\recep.yaml
+		k8s\server.yaml = k8s\server.yaml
 	EndProjectSection
 EndProject
 Global
@@ -79,6 +92,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{DBA33922-0DE1-47AB-BC17-9F2EF2545E5D} = {6F8A051C-1D13-480B-BCFD-1ABABF1F5C8D}
+		{F00792F2-CCB6-44D1-837B-991823149B05} = {6F8A051C-1D13-480B-BCFD-1ABABF1F5C8D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2D65A552-56A9-4CCB-84F3-CCC7D07B0AD9}

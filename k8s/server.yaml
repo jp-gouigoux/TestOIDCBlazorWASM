@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: tobw
+  name: server-deploy
+  labels:
+    app: server
+spec:
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+      - name: server
+        image: registreakseni.azurecr.io/testoidcblazorwasmserver:1.4
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: tobw-params
+        args: ["--RabbitMQ__HoteServeur=mom", "--RabbitMQ__Utilisateur=rapido", "--RabbitMQ__MotDePasse=k5rXH6wmBhE2bukfXFsz", "--RabbitMQ__NomQueueMessagesCreationPersonnes=personnes", "--PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017", "--PersistanceNoSQL__PersonnesDatabaseName=personnes", "--PersistanceNoSQL__PersonnesCollectionName=personnes", "--OIDC__Authority=https://dockereni.francecentral.cloudapp.azure.com:8443/realms/LivreENI/", "--OIDC__ClientId=appli-eni"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: tobw
+  name: server-service
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
+  selector:
+    app: server
