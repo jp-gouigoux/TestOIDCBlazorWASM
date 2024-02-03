@@ -14,6 +14,9 @@ Afin de ne pas encombrer le présent fichier, qui a juste pour objectif de perme
 les problèmes rencontrés, les choix architecturaux et leurs avantages seront exposés à part, sur plusieurs articles d'une même catégorie
 dans le blog http://gouigoux.com/blog-fr/?tag=TestOIDCBlazorWASM.
 
+A partir de 2024, tous les articles qui compléteront la description de cette application seront désormais écrits sur la nouvelle 
+implémentation du blog statique disponible sur https://gouigoux.com/blog-md/.
+
 # Prérequis
 
 Pour fonctionner, l'application a besoin des serveurs satellites suivants, pour lesquels on montrera ci-dessous la commande recommandée
