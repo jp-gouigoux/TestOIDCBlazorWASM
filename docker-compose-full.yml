@@ -84,7 +84,7 @@ services:
       start_period: 20s
 
   recep:
-    image: jpgouigoux/recepteurmessages:1.3
+    image: jpgouigoux/recepteurmessages:1.4
     build:
       context: .
       dockerfile: RecepteurMessages/Dockerfile
@@ -113,7 +113,7 @@ services:
       replicas: 3
 
   api:
-    image: jpgouigoux/testoidcblazorwasmapi:1.3
+    image: jpgouigoux/testoidcblazorwasmapi:1.4
     build:
       context: .
       dockerfile: TestOIDCBlazorWASM.API/Dockerfile
@@ -131,7 +131,7 @@ services:
       - certifclient
 
   server:
-    image: jpgouigoux/testoidcblazorwasmserver:1.3
+    image: jpgouigoux/testoidcblazorwasmserver:1.4
     build:
       context: .
       dockerfile: TestOIDCBlazorWASM/Server/Dockerfile

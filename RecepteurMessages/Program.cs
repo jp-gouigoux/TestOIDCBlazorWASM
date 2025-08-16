@@ -17,22 +17,24 @@ IConfiguration Configuration = new ConfigurationBuilder()
   .AddCommandLine(args)
   .Build();
 
-string MotDePasseCertificatClient = Configuration.GetSection("Securite")["MotDePasseCertificatClient"];
-string FichierMotDePasse = Configuration.GetSection("Securite")["FichierMotDePasseCertificatClient"];
+string? MotDePasseCertificatClient = Configuration.GetSection("Securite")["MotDePasseCertificatClient"];
+string? FichierMotDePasse = Configuration.GetSection("Securite")["FichierMotDePasseCertificatClient"];
 if (!string.IsNullOrEmpty(FichierMotDePasse))
     MotDePasseCertificatClient = File.ReadAllText(FichierMotDePasse);
+if (string.IsNullOrEmpty(MotDePasseCertificatClient))
+    throw new ArgumentException("Un paramétrage du mot de passe pour le certificat client, par fichier ou par valeur, est obligatoire dans la section Securite");
 
-string ServeurRabbitMQ = Configuration["RabbitMQ__HoteServeur"];
+string ServeurRabbitMQ = Configuration["RabbitMQ__HoteServeur"] ?? "localhost";
 string UserNameRabbitMQ = Configuration["RabbitMQ__Utilisateur"] ?? "guest";
 string PasswordRabbitMQ = Configuration["RabbitMQ__MotDePasse"] ?? "guest";
 if (ServeurRabbitMQ == null) throw new ArgumentException("L'argument de ligne de commande RabbitMQ__HoteServeur doit obligatoirement spécifier un serveur RabbitMQ");
 var factory = new ConnectionFactory() { HostName = ServeurRabbitMQ, UserName = UserNameRabbitMQ, Password = PasswordRabbitMQ };
-using (var connection = factory.CreateConnection())
-using (var channel = connection.CreateModel())
+using (var connection = await factory.CreateConnectionAsync())
+using (var channel = await connection.CreateChannelAsync())
 {
-    channel.QueueDeclare(queue: Configuration["RabbitMQ__NomQueueMessagesCreationPersonnes"], durable: false, exclusive: false, autoDelete: false, arguments: null);
-    var consumer = new EventingBasicConsumer(channel);
-    consumer.Received += (model, ea) =>
+    await channel.QueueDeclareAsync(queue: Configuration["RabbitMQ__NomQueueMessagesCreationPersonnes"] ?? "personnes", durable: false, exclusive: false, autoDelete: false, arguments: null);
+    var consumer = new AsyncEventingBasicConsumer(channel);
+    consumer.ReceivedAsync += async (model, ea) => 
     {
         try
         {
@@ -48,9 +50,8 @@ using (var channel = connection.CreateModel())
                 byte[] pdf = GenerateurPDF.GenererFiche(Configuration, p);
 
                 // Cette fiche est ensuite déposée dans une GED (n'importe laquelle, du moment qu'elle supporte CMIS)
-                string nomFichier = Configuration.GetSection("GED")["ModeleNomFichierPourFichesPersonnes"]
-                    .Replace("{prenom}", p.Prenom)
-                    .Replace("{patronyme}", p.Patronyme);
+                string templateNomFichier = Configuration.GetSection("GED")["ModeleNomFichierPourFichesPersonnes"] ?? "Fichier-{prenom}-{patronyme}.pdf";
+                string nomFichier = templateNomFichier.Replace("{prenom}", p.Prenom).Replace("{patronyme}", p.Patronyme);
                 string idDoc = ClientGED.DeposerGED(Configuration, pdf, nomFichier);
 
                 // On attend un peu, de façon à simuler une opération bien complexe
@@ -61,10 +62,13 @@ using (var channel = connection.CreateModel())
 
                 // Appel de l'API Personnes pour patcher le code du document associé
                 // (même si le mieux sera de faire une requête CMIS dynamique à chaque appel)
+                string? modeleURLExpositionDirecteDocuments = Configuration["GED__ModeleURLExpositionDirecteDocuments"];
+                if (string.IsNullOrEmpty(modeleURLExpositionDirecteDocuments))
+                    throw new ArgumentException("L'attribut ModeleURLExpositionDirecteDocuments doit être spécifié dans la section de configuration GED");
                 ClientAPIPersonnes.AjouterFicheSurPersonne(
                     Configuration,
                     p,
-                    new Uri(Configuration["GED__ModeleURLExpositionDirecteDocuments"]
+                    new Uri(modeleURLExpositionDirecteDocuments
                         .Replace("{nomFichier}", nomFichier)
                         .Replace("{idDoc}", idDoc)));
 
@@ -82,10 +86,10 @@ using (var channel = connection.CreateModel())
         finally
         {
             // Pour simplifier dans un premier temps, on acknowledge toujours, que le traitement se soit bien passé ou pas
-            channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+            await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
         }
     };
-    channel.BasicConsume(queue: Configuration["RabbitMQ__NomQueueMessagesCreationPersonnes"], autoAck: false, consumer: consumer);
+    await channel.BasicConsumeAsync(queue: Configuration["RabbitMQ__NomQueueMessagesCreationPersonnes"], autoAck: false, consumer: consumer);
 
     Console.WriteLine("Appuyer la touche ENTREE pour terminer le programme");
     Console.ReadLine();

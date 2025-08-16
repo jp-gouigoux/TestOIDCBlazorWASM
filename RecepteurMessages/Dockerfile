@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
 WORKDIR /src
 COPY ["RecepteurMessages/RecepteurMessages.csproj", "RecepteurMessages/"]
 COPY ["TestOIDCBlazorWASM/Shared/TestOIDCBlazorWASM.Shared.csproj", "TestOIDCBlazorWASM/Shared/"]
@@ -8,7 +8,7 @@ WORKDIR "/src/RecepteurMessages"
 RUN dotnet build "RecepteurMessages.csproj" -c Release -o /app/build
 RUN dotnet publish "RecepteurMessages.csproj" -c Release -o /app/publish
 
-FROM mcr.microsoft.com/dotnet/runtime:6.0 AS final
+FROM mcr.microsoft.com/dotnet/runtime:10.0-preview AS final
 ARG URL_XKCD=https://xkcd.com/{indexImage}/info.0.json
 ARG MAXINDEX_XKCD=614
 WORKDIR /app

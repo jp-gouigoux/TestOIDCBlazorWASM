@@ -93,19 +93,20 @@ namespace TestOIDCBlazorWASM.Work
         // également pour ne pas avoir à révoquer tout le monde d'un coup en cas de fuite de certificat)
         [HttpPost]
         [Route("/api/[controller]")]
-        public virtual IActionResult CreationPersonne([FromBody] DbPersonne personne)
+        public virtual async Task<IActionResult> CreationPersonne([FromBody] DbPersonne personne)
         {
             if (string.IsNullOrEmpty(personne.ObjectId))
                 personne.ObjectId = Guid.NewGuid().ToString("N");
-            Collection.InsertOneAsync(personne);
+            await Collection.InsertOneAsync(personne);
 
             var factory = new ConnectionFactory() { HostName = this.NomServeurMOM, UserName = this.NomUtilisateurMOM, Password = this.MotDePasseMOM };
-            using (var connection = factory.CreateConnection())
-            using (var channel = connection.CreateModel())
+            using (var connection = await factory.CreateConnectionAsync())
+            using (var channel = await connection.CreateChannelAsync())
             {
-                channel.QueueDeclare(queue: this.NomQueueMessages, durable: false, exclusive: false, autoDelete: false, arguments: null);
+                await channel.QueueDeclareAsync(queue: this.NomQueueMessages, durable: false, exclusive: false, autoDelete: false, arguments: null);
                 var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(personne));
-                channel.BasicPublish(exchange: "", routingKey: this.NomQueueMessages, basicProperties: null, body: body);
+                var props = new BasicProperties();
+                await channel.BasicPublishAsync(exchange: "", routingKey: this.NomQueueMessages, mandatory:true, basicProperties: props, body: body);
             }
 
             Response.Headers.Add("Location", ModeleEnteteHTTPLocation.Replace("${object_id}", personne.ObjectId));

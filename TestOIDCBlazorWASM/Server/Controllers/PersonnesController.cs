@@ -31,9 +31,9 @@ namespace TestOIDCBlazorWASM.Server.Controllers
         [Authorize(Policy = "administrateur")] // On ne surcharge que les autorisations qui le nécessitent, mais on ne peut pas passer en AllowAnonymous quelque chose qui hérite un Authorize
         [HttpPost] // Les expositions doivent être explicitement reprises car elles ne sont pas héritées et il y a alors conflit entre les GET et POST sur la même route
         [Route("/api/[controller]")] // Par contre, les routes sont obligatoirement réécrites
-        public override IActionResult CreationPersonne([FromBody] DbPersonne personne)
+        public override async Task<IActionResult> CreationPersonne([FromBody] DbPersonne personne)
         {
-            return base.CreationPersonne(personne);
+            return await base.CreationPersonne(personne);
         }
     }
 }
