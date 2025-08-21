@@ -1,9 +1,7 @@
-version: "3.6"
-
 services:
 
   caddy:
-    image: caddy:2-alpine
+    image: caddy:2.10
     ports:
       - "80:80"
       - "443:443"
@@ -15,9 +13,10 @@ services:
       placement:
         constraints:
           - node.role == manager
+    restart: always
 
   dbiam:
-    image: postgres:14.5
+    image: postgres:17.6
     user: postgres
     environment:
       - POSTGRES_USER=postgres
@@ -31,30 +30,29 @@ services:
       timeout: 1s
       retries: 6
       start_period: 5s
+    restart: always
 
   iam:
-    image: quay.io/keycloak/keycloak:18.0.2
+    image: quay.io/keycloak/keycloak:26.3
     environment:
       - KEYCLOAK_ADMIN=armoire
       - KEYCLOAK_ADMIN_PASSWORD=vBWtB2PloopC042cszXZ
-      - KC_HTTPS_CERTIFICATE_FILE=/run/secrets/crt
-      - KC_HTTPS_CERTIFICATE_KEY_FILE=/run/secrets/key
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://dbiam/keycloak
       - KC_DB_USERNAME=postgres
       - KC_DB_PASSWORD=KY9CO8sHshzM5YxfLtzL
     command:
       - start-dev
-      - --proxy=edge
-      - --hostname=dockereni.francecentral.cloudapp.azure.com:8443
-    secrets:
-      - crt
-      - key
+      - --proxy-headers=xforwarded
+      - --hostname=https://dockereni.francecentral.cloudapp.azure.com/iam/
+      - --hostname-backchannel-dynamic=false
+      - --proxy-trusted-addresses=0.0.0.0/0
     ports:
-      - "8443:8443"
+      - "0.0.0.0:8080:8080"
+    restart: always
 
   mom:
-    image: rabbitmq:3-management
+    image: rabbitmq:4.1-management
     environment:
       - RABBITMQ_DEFAULT_USER=rapido
       - RABBITMQ_DEFAULT_PASS=k5rXH6wmBhE2bukfXFsz
@@ -64,24 +62,25 @@ services:
       timeout: 1s
       retries: 10
       start_period: 5s
+    restart: always
 
   db:
-    image: mongo:4.4
+    image: mongo:8.0
     healthcheck:
       test: ["CMD", "mongo", "--eval", "'db.runCommand(\"ping\").ok'", "localhost:27017/personnes", "--quiet"]
       interval: 3s
       timeout: 1s
       retries: 10
       start_period: 1s
+    ports:
+      - "27017:27017"
+    restart: always
 
   ged:
-    image: nuxeo:10.10
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
-      interval: 3s
-      timeout: 1s
-      retries: 10
-      start_period: 20s
+    image: math56890/lightweightcmis:0.5
+    ports:
+      - "8088:8080"
+    restart: always
 
   recep:
     image: jpgouigoux/recepteurmessages:1.4
@@ -91,26 +90,28 @@ services:
       args:
         - MAXINDEX_XKCD=50
     environment:
-      - Securite__CheminFichierCertificatClient=/run/secrets/certifclient
-      - URLBaseServiceAPI=https://api
+      - URLBaseServiceAPI=http://api
       - ASPNETCORE_ENVIRONMENT=Development
     command:
       - --RabbitMQ__HoteServeur=mom
       - --RabbitMQ__Utilisateur=rapido
       - --RabbitMQ__MotDePasse=k5rXH6wmBhE2bukfXFsz
       - --RabbitMQ__NomQueueMessagesCreationPersonnes=personnes
-      - --GED__URLAtomPub=http://ged:8080/nuxeo/atom/cmis
-      - --GED__ServiceAccountName=Administrator
-      - --GED__ServiceAccountPassword=Administrator
-      - --GED__ModeleURLExpositionDirecteDocuments=https://dockereni.francecentral.cloudapp.azure.com/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}
+      - --GED__URLBrowser=http://ged:8080/lightweightcmis/browser/
+      - --GED__ServiceAccountName=admin
+      - --GED__ServiceAccountPassword=admin
+      - --GED__ModeleURLExpositionDirecteDocuments=https://dockereni.francecentral.cloudapp.azure.com/lightweightcmis/browser/default/root/?cmisselector=content&objectId={idDoc}
       - --Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient
+      - --Securite__CheminFichierCertificatClient=/run/secrets/certifclient
+      - --XKCD__TemplateURLAPI=https://xkcd.com/{indexImage}/info.0.json
     secrets:
       - pwdcertifclient
       - certifclient
     stdin_open: true
     tty: true
     deploy:
-      replicas: 3
+      replicas: 1
+    restart: always
 
   api:
     image: jpgouigoux/testoidcblazorwasmapi:1.4
@@ -125,11 +126,13 @@ services:
       - --PersistanceNoSQL__PersonnesDatabaseName=personnes
       - --PersistanceNoSQL__PersonnesCollectionName=personnes
       - --Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient
-      - --Securite__EmpreinteCertificatClient=41E81F27F42F381B7406129DAAB055802F9A64B9
+      - --Securite__EmpreinteCertificatClient=FDBE54F78826D8EB51F3617C5E3C7A7DCFAF722C
     secrets:
       - pwdcertifclient
       - certifclient
+    restart: always
 
+  # Pattern BFF
   server:
     image: jpgouigoux/testoidcblazorwasmserver:1.4
     build:
@@ -145,10 +148,11 @@ services:
       - --PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017
       - --PersistanceNoSQL__PersonnesDatabaseName=personnes
       - --PersistanceNoSQL__PersonnesCollectionName=personnes
-      - --OIDC__Authority=https://dockereni.francecentral.cloudapp.azure.com:8443/realms/LivreENI/
+      - --OIDC__Authority=https://dockereni.francecentral.cloudapp.azure.com/iam/realms/LivreENI/
       - --OIDC__ClientId=appli-eni
     ports:
       - "5000:5000"
+    restart: always
 
 volumes:
   datadb:
@@ -161,7 +165,3 @@ secrets:
     file: ./MotDePasseCertificatClient.secret
   certifclient:
     file: ./clienttestoidc.pfx
-  crt:
-    file: /home/azureuser/server.crt.pem
-  key:
-    file: /home/azureuser/server.key.pem

@@ -1,4 +1,12 @@
-dockereni.francecentral.cloudapp.azure.com
+{
+    debug
+}
 
-reverse_proxy /nuxeo/* ged:8080
-reverse_proxy server:5000
+dockereni.francecentral.cloudapp.azure.com {
+    reverse_proxy /lightweightcmis/* ged:8080
+    handle_path /iam/* {
+        rewrite * /{path}
+        reverse_proxy iam:8080
+    }
+    reverse_proxy server:5000
+}
