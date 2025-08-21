@@ -1,8 +1,4 @@
-﻿using DotCMIS;
-using DotCMIS.Client;
-using DotCMIS.Client.Impl;
-using DotCMIS.Data.Impl;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
