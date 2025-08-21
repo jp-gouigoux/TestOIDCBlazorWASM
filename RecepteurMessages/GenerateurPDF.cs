@@ -21,19 +21,24 @@ namespace RecepteurMessages
         {
             // Récupération d'une image sur XKCD
             int maximumIndexImage = 614;
-            int.TryParse(Configuration.GetSection("XKCD")["MaximumIndexImage"], out maximumIndexImage);
+            int.TryParse(Configuration["XKCD__MaximumIndexImage"], out maximumIndexImage);
             int indexImage = hasard.Next(maximumIndexImage) + 1;
+            Console.WriteLine("Index image : " + indexImage);
+            Console.WriteLine("TemplateURL : " + Configuration["XKCD__TemplateURLAPI"]);
             Task<string> definition = client.GetStringAsync(
-                Configuration.GetSection("XKCD")["TemplateURLAPI"].Replace("{indexImage}", indexImage.ToString()));
+                Configuration["XKCD__TemplateURLAPI"].Replace("{indexImage}", indexImage.ToString()));
             JsonDocument json = JsonDocument.Parse(definition.Result);
             string? urlPhoto = json.RootElement.GetProperty("img").GetString();
+            Console.WriteLine("URL image : " + urlPhoto);
             Task<byte[]> image = client.GetByteArrayAsync(urlPhoto);
 
             // Chargement d'une fonte
+            Console.WriteLine("Chargement des fontes");
             FontManager.RegisterFont(File.OpenRead("Lato-Regular.ttf"));
             FontManager.RegisterFont(File.OpenRead("Lato-Semibold.ttf"));
 
             // Génération d'un document complexe
+            Console.WriteLine("Création du document");
             Document doc = Document.Create(document => {
                 document.Page(page =>
                 {
@@ -50,6 +55,8 @@ namespace RecepteurMessages
             });
 
             // Retour du document généré
+            Console.WriteLine("Génération du PDF");
+            QuestPDF.Settings.License = LicenseType.Community; // If you use this code, check that you are compliant with QuestPDF license
             return doc.GeneratePdf();
         }
     }

@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <UserSecretsId>0ca9d7b5-c676-432a-b8c3-c4fe58a70856</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Apache.DotCMIS" Version="0.6.0" />
     <PackageReference Include="HarfBuzzSharp" Version="8.3.1.1" />
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.7" />
