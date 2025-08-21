@@ -21,15 +21,26 @@ namespace RecepteurMessages
             // et le premier code exemple utilisé est celui indiqué sur https://stackoverflow.com/questions/40014047/add-client-certificate-to-net-core-httpclient
             if (client == null)
             {
+                string MotDePasseCertificatClient = Configuration["Securite__MotDePasseCertificatClient"]!;
+                string FichierMotDePasse = Configuration["Securite__FichierMotDePasseCertificatClient"]!;
+                if (!string.IsNullOrEmpty(FichierMotDePasse))
+                    MotDePasseCertificatClient = File.ReadAllText(FichierMotDePasse);
+                if (string.IsNullOrEmpty(MotDePasseCertificatClient))
+                    throw new ArgumentException("Un au moins des paramètres du groupe Securite, entre MotDePasseCertificatClient et FichierMotDePasseCertificatClient, doit être renseigné pour utiliser le certificat client");
+
                 var handler = new HttpClientHandler();
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 handler.SslProtocols = SslProtocols.Tls12;
-                string MotDePasseCertificatClient = Configuration.GetSection("Securite")["MotDePasseCertificatClient"];
-                string FichierMotDePasse = Configuration["Securite__FichierMotDePasseCertificatClient"];
-                if (!string.IsNullOrEmpty(FichierMotDePasse))
-                    MotDePasseCertificatClient = File.ReadAllText(FichierMotDePasse);
+
+                string CheminFichierCertificatClient = Configuration["Securite__CheminFichierCertificatClient"]
+                    ?? throw new ArgumentException("Le paramètre de configuration Securite CheminFichierCertificatClient doit être renseigné pour utiliser le certificat client");
+#if DEBUG
+                Console.WriteLine("Mot de passe du certificat client : " + MotDePasseCertificatClient);
+                Console.WriteLine("Chemin du fichier mot de passe du certificat client : " + FichierMotDePasse);
+                Console.WriteLine("Chemin du fichier certificat client : " + CheminFichierCertificatClient);
+#endif
                 var cert = new X509Certificate2(
-                    Configuration.GetSection("Securite")["CheminFichierCertificatClient"],
+                    CheminFichierCertificatClient,
                     MotDePasseCertificatClient);
                 handler.ClientCertificates.Add(cert);
                 handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;

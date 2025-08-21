@@ -11,14 +11,14 @@ using TestOIDCBlazorWASM.Shared;
 // Les variables d'environnement ou la ligne de commande seront utilisées pour passer les paramètres confidentiels,
 // comme le mot de passe du certificat client à utiliser pour s'authentifier à l'API paramétrée en ClientCertificate
 IConfiguration Configuration = new ConfigurationBuilder()
-  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // Uniquement pour le mode debug, car fichier appsettings.json non inclus dans l'image Docker lors du build
   .AddEnvironmentVariables()
-  .AddUserSecrets<Program>()
+  .AddUserSecrets<Program>() // Uniquement utilisé en local dans Visual Studio
   .AddCommandLine(args)
   .Build();
 
-string? MotDePasseCertificatClient = Configuration.GetSection("Securite")["MotDePasseCertificatClient"];
-string? FichierMotDePasse = Configuration.GetSection("Securite")["FichierMotDePasseCertificatClient"];
+string? MotDePasseCertificatClient = Configuration["Securite__MotDePasseCertificatClient"];
+string? FichierMotDePasse = Configuration["Securite__FichierMotDePasseCertificatClient"];
 if (!string.IsNullOrEmpty(FichierMotDePasse))
     MotDePasseCertificatClient = File.ReadAllText(FichierMotDePasse);
 if (string.IsNullOrEmpty(MotDePasseCertificatClient))
@@ -48,11 +48,14 @@ using (var channel = await connection.CreateChannelAsync())
 
                 // On commence par générer une fiche PDF spécifique à la personne
                 byte[] pdf = GenerateurPDF.GenererFiche(Configuration, p);
+                Console.WriteLine("Fiche créée (taille : " + pdf.Length + ")");
 
                 // Cette fiche est ensuite déposée dans une GED (n'importe laquelle, du moment qu'elle supporte CMIS)
-                string templateNomFichier = Configuration.GetSection("GED")["ModeleNomFichierPourFichesPersonnes"] ?? "Fichier-{prenom}-{patronyme}.pdf";
+                string templateNomFichier = Configuration["GED__ModeleNomFichierPourFichesPersonnes"] ?? "Fichier-{prenom}-{patronyme}.pdf";
                 string nomFichier = templateNomFichier.Replace("{prenom}", p.Prenom).Replace("{patronyme}", p.Patronyme);
-                string idDoc = ClientGED.DeposerGED(Configuration, pdf, nomFichier);
+                Console.WriteLine("Nom du fichier pour la GED : " + nomFichier);
+                string idDoc = await ClientGED.DeposerGEDAsync(Configuration, pdf, nomFichier);
+                Console.WriteLine("Fichier déposé dans la GED avec identifiant retourné : " + idDoc);
 
                 // On attend un peu, de façon à simuler une opération bien complexe
                 // et laisser le temps au navigateur client de voir la liste sans la fiche
