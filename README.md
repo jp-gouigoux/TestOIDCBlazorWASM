@@ -1,26 +1,14 @@
 # TestOIDCBlazorWASM
 
-Cette application exemple montre un **client Blazor WebAssembly** qui se connecte à un **serveur ASP.NET Core**
-qui porte le téléchargement de la Single Page Application ainsi qu'une exposition d'API, les deux
-étant authentifiés par un serveur d'identité **OpenID Connect** implémenté en **KeyCloak**. La persistance
-de l'API est assurée par une base **MongoDB** pour les données, et une **GED Nuxeo** appelée en norme CMIS
-pour les documents. Les documents sont générés en asynchrone par un client **console .NET Core** qui
-lit une queue de message **RabbitMQ** et modifie la persistance par une seconde entrée d'API, protégée
-cette fois par un mécanisme **ClientCertificate**. Cette seconde exposition d'API se fait sur un autre 
-port que la première mais avec une implémentation unique, les deux contrôleurs se basant sur une 
-seule et unique classe abstraite, en ne surchargeant que les politiques d'accès.
+Cette application exemple montre un **client Blazor WebAssembly** qui se connecte à un **serveur ASP.NET Core** qui porte le téléchargement de la Single Page Application ainsi qu'une exposition d'API, les deux étant authentifiés par un serveur d'identité **OpenID Connect** implémenté en **KeyCloak**. La persistance de l'API est assurée par une base **MongoDB** pour les données, et une **GED Nuxeo** appelée en norme CMIS pour les documents. Les documents sont générés en asynchrone par un client **console .NET Core** qui lit une queue de message **RabbitMQ** et modifie la persistance par une seconde entrée d'API, protégée cette fois par un mécanisme **ClientCertificate**. Cette seconde exposition d'API se fait sur un autre port que la première mais avec une implémentation unique, les deux contrôleurs se basant sur une seule et unique classe abstraite, en ne surchargeant que les politiques d'accès.
 
-Afin de ne pas encombrer le présent fichier, qui a juste pour objectif de permettre de lancer l'application, les détails sur la conception,
-les problèmes rencontrés, les choix architecturaux et leurs avantages seront exposés à part, sur plusieurs articles d'une même catégorie
-dans le blog http://gouigoux.com/blog-fr/?tag=TestOIDCBlazorWASM.
+Afin de ne pas encombrer le présent fichier, qui a juste pour objectif de permettre de lancer l'application, les détails sur la conception, les problèmes rencontrés, les choix architecturaux et leurs avantages seront exposés à part, sur plusieurs articles d'une même catégorie dans le blog http://gouigoux.com/blog-fr/?tag=TestOIDCBlazorWASM.
 
-A partir de 2024, tous les articles qui compléteront la description de cette application seront désormais écrits sur la nouvelle 
-implémentation du blog statique disponible sur https://gouigoux.com/blog-md/.
+A partir de 2024, tous les articles qui compléteront la description de cette application seront désormais écrits sur la nouvelle implémentation du blog statique disponible sur https://gouigoux.com/blog-md/.
 
 # Prérequis
 
-Pour fonctionner, l'application a besoin des serveurs satellites suivants, pour lesquels on montrera ci-dessous la commande recommandée
-d'initialisation en mode Docker.
+Pour fonctionner, l'application a besoin des serveurs satellites suivants, pour lesquels on montrera ci-dessous la commande recommandée d'initialisation en mode Docker.
 
 ### KeyCloak
 
@@ -28,8 +16,7 @@ d'initialisation en mode Docker.
 docker run -p 8080:8080 -d -e KEYCLOAK_ADMIN=armoire -e KEYCLOAK_ADMIN_PASSWORD=vBWtB2PloopC042cszXZ --name iam quay.io/keycloak/keycloak:18.0.2 start-dev
 ```
 
-L'interface de KeyCloak est disponible sur http://localhost:8080/admin/, et les crédentiels sont ceux indiqués en paramètre du lancement
-du conteneur. Le paramétrage recommandé est le suivant :
+L'interface de KeyCloak est disponible sur http://localhost:8080/admin/, et les crédentiels sont ceux indiqués en paramètre du lancement du conteneur. Le paramétrage recommandé est le suivant :
 
 1. Créer un nouveau tenant d'authentification (```AddRealm``` en haut à gauche, le nommer par exemple ```LivreENI```)
 1. A l'intérieur de ce royaume (un tenant, en langage d'IAM), créer un client avec OpenID Connect comme protocole ; dans notre exemple, il sera nommé ```appli-eni```
@@ -61,11 +48,7 @@ L'interface est disponible sur http://localhost:15672 avec les crédentiels four
 docker run -d -p 27017:27017 --name db mongo:4.4
 ```
 
-Pas d'interface web de gestion par défaut, mais Robo 3T est un excellent client, qui peut être téléchargé
-sur https://github.com/Studio3T/robomongo et reste gratuit à ce jour. A noter que, par défaut, l'accès à la base de données n'est pas sécurisé.
-La gestion de l'authentification sur MongoDB étant une tâche un peu plus complexe que juste paramétrer un login et un mot de passe, elle est laissée
-de côté pour l'instant. La base de données n'étant pas exposée directement par l'ingress, on bénéficie tout de même d'un premier rideau de sécurité,
-qu'on peut éventuellement compléter en utilisant des règles de pare-feu de façon que seuls les serveurs applicatifs aient accès à la base de données.
+Pas d'interface web de gestion par défaut, mais Robo 3T est un excellent client, qui peut être téléchargé sur https://github.com/Studio3T/robomongo et reste gratuit à ce jour. A noter que, par défaut, l'accès à la base de données n'est pas sécurisé. La gestion de l'authentification sur MongoDB étant une tâche un peu plus complexe que juste paramétrer un login et un mot de passe, elle est laissée de côté pour l'instant. La base de données n'étant pas exposée directement par l'ingress, on bénéficie tout de même d'un premier rideau de sécurité, qu'on peut éventuellement compléter en utilisant des règles de pare-feu de façon que seuls les serveurs applicatifs aient accès à la base de données.
 
 ### Nuxeo
 
@@ -73,18 +56,11 @@ qu'on peut éventuellement compléter en utilisant des règles de pare-feu de fa
 docker run -d --name ged -p 9000:8080 nuxeo
 ```
 
-Par défaut, il faut utiliser le user ```Administrator``` et le mot de passe ```Administrator``` pour se connecter aux endpoints de la GED.
-L'image fournie sur DockerHub ne rend pas simple de modifier les crédentiels et ne fournit par défaut pas non plus d'interface graphique
-qui permettrait de remédier à ce mot de passe simple par défaut. Comme pour MongoDB, il est toutefois moins grave sur cette instance
-de garder ce défaut de sécurité pour l'instant, car il s'agit d'un serveur de pur back office, non exposé aux clients par l'ingress.
-Nous utiliserons le type ```AtomPub``` accessible sur http://localhost:9000/nuxeo/atom/cmis). Comme expliqué, l'image Nuxeo ne fournit
-pas d'interface graphique par défaut, donc le plus simple est d'utiliser le client CMIS Apache Chemistry
-disponible sur http://archive.apache.org/dist/chemistry/opencmis/1.1.0/.
+Par défaut, il faut utiliser le user ```Administrator``` et le mot de passe ```Administrator``` pour se connecter aux endpoints de la GED. L'image fournie sur DockerHub ne rend pas simple de modifier les crédentiels et ne fournit par défaut pas non plus d'interface graphique qui permettrait de remédier à ce mot de passe simple par défaut. Comme pour MongoDB, il est toutefois moins grave sur cette instance de garder ce défaut de sécurité pour l'instant, car il s'agit d'un serveur de pur back office, non exposé aux clients par l'ingress. Nous utiliserons le type ```AtomPub``` accessible sur http://localhost:9000/nuxeo/atom/cmis). Comme expliqué, l'image Nuxeo ne fournit pas d'interface graphique par défaut, donc le plus simple est d'utiliser le client CMIS Apache Chemistry disponible sur http://archive.apache.org/dist/chemistry/opencmis/1.1.0/.
 
 # Préparation des certificats
 
-L'application utilisant pour partie une authentification de type ClientCertificate, il est nécessaire de préparer des certificats en lançant,
-en mode administrateur, les commandes PowerShell ci-dessous :
+L'application utilisant pour partie une authentification de type ClientCertificate, il est nécessaire de préparer des certificats en lançant, en mode administrateur, les commandes PowerShell ci-dessous :
 
 ## Certificat racine
 
@@ -92,25 +68,17 @@ en mode administrateur, les commandes PowerShell ci-dessous :
 New-SelfSignedCertificate -DnsName "localhost" -CertStoreLocation "cert:\LocalMachine\My" -NotAfter (Get-Date).AddDays(365) -FriendlyName "RacineTestOIDCBlazor" -KeyUsageProperty All -KeyUsage CertSign, CRLSign, DigitalSignature
 ```
 
-Cette première commande crée un certificat avec la capacité de signer un autre certificat, et donc d'agir en tant qu'autorité de certification.
-La durée de validité, le mot de passe ainsi que le libellé sont à adapter à votre usage, les valeurs utilisées ci-dessus étant celles reprises
-dans le projet. La commande affiche l'empreinte (thumbprint en jargon anglais) du certificat généré : stockez-là pour l'insérer
-dans la commande suivante en remplacement de ==>THUMBPRINT-RACINE<==, ainsi que dans celle, plus bas, où nous créerons un certificat signé
-par ce certificat dont nous allons faire une autorité.
+Cette première commande crée un certificat avec la capacité de signer un autre certificat, et donc d'agir en tant qu'autorité de certification. La durée de validité, le mot de passe ainsi que le libellé sont à adapter à votre usage, les valeurs utilisées ci-dessus étant celles reprises dans le projet. La commande affiche l'empreinte (thumbprint en jargon anglais) du certificat généré : stockez-là pour l'insérer dans la commande suivante en remplacement de ==>THUMBPRINT-RACINE<==, ainsi que dans celle, plus bas, où nous créerons un certificat signé par ce certificat dont nous allons faire une autorité.
 
 ```
 Get-ChildItem -Path cert:\LocalMachine\My\==>THUMBPRINT-RACINE<== | Export-PfxCertificate -FilePath .\racinetestoidc.pfx -Password ( ConvertTo-SecureString -String "iOG76ThFD45sZ89nBGV6" -Force -AsPlainText )
 ```
 
-Cette seconde commande permet d'exporter le certificat sous la forme d'un fichier PFX dont l'utilisation sera protégée par un mot de passe. 
-Le certificat racine ```racinetestoidc.pfx``` doit être placé dans les autorités de certification racines de confiance (clic-droit
-et ```Toutes les tâches``` puis ```Importer...```) :
+Cette seconde commande permet d'exporter le certificat sous la forme d'un fichier PFX dont l'utilisation sera protégée par un mot de passe. Le certificat racine ```racinetestoidc.pfx``` doit être placé dans les autorités de certification racines de confiance (clic-droit et ```Toutes les tâches``` puis ```Importer...```) :
 
 ![certificatracine](./images/certificatracine.png)
 
-Attention à bien se positionner sur la gestion des certificats de la machine et non l'interface de gestion des certificats de l'utilisateur
-(le nom de l'application doit apparaître comme ```certlm``` et non comme ```certmgr```). Le mot de passe sera à indiquer lors de l'import du certificat
-dans la liste des autorités de certification racine.
+Attention à bien se positionner sur la gestion des certificats de la machine et non l'interface de gestion des certificats de l'utilisateur (le nom de l'application doit apparaître comme ```certlm``` et non comme ```certmgr```). Le mot de passe sera à indiquer lors de l'import du certificat dans la liste des autorités de certification racine.
 
 ## Certificat client
 
@@ -118,22 +86,15 @@ dans la liste des autorités de certification racine.
 New-SelfSignedCertificate -DnsName "localhost" -CertStoreLocation cert:\LocalMachine\My -NotAfter (Get-Date).AddDays(365) -FriendlyName "ClientTestOIDCBlazor" -Signer ( Get-ChildItem -Path cert:\LocalMachine\My\==>THUMBPRINT-RACINE<== )
 ```
 
-Ceci, comme la toute première commande, a permis de générer un certificat signé par le précédent certificat, d'où la nécessité de bien indiquer
-l'empreinte du certificat racine créé plus haut. La commande indique en sortie l'empreinte (thumbprint) du second certificat, qui va cette fois
-être utilisée ci-dessous pour créer le fichier PFX de ce second certificat, en remplaçant ==>THUMBPRINT-CLIENT<== par l'empreinte juste créée.
+Ceci, comme la toute première commande, a permis de générer un certificat signé par le précédent certificat, d'où la nécessité de bien indiquer l'empreinte du certificat racine créé plus haut. La commande indique en sortie l'empreinte (thumbprint) du second certificat, qui va cette fois être utilisée ci-dessous pour créer le fichier PFX de ce second certificat, en remplaçant ==>THUMBPRINT-CLIENT<== par l'empreinte juste créée.
 
 ```
 Get-ChildItem -Path cert:\LocalMachine\My\==>THUMBPRINT-CLIENT<=== | Export-PfxCertificate -FilePath .\clienttestoidc.pfx -Password ( ConvertTo-SecureString -String "oLG78hFS65gBNfx89PmPPp" -Force -AsPlainText )
 ```
 
-Le point le plus important à configurer dans l'application est le serveur d'API en mode ClientCertificate qui est dans le projet **TestOIDCBlazorWASM.API**.
-C'est la première action de paramétrage qui sera réalisée dans la section suivante de la présente documentation. Pour réaliser cette opération, stockez
-soigneusement l'empreinte (thumbprint) du certificat client qui a été généré à l'instant.
+Le point le plus important à configurer dans l'application est le serveur d'API en mode ClientCertificate qui est dans le projet **TestOIDCBlazorWASM.API**. C'est la première action de paramétrage qui sera réalisée dans la section suivante de la présente documentation. Pour réaliser cette opération, stockez soigneusement l'empreinte (thumbprint) du certificat client qui a été généré à l'instant. Il faudra la préciser dans l'attribut nommé `THUMBPRINT_CERTIFICAT` du fichier `.env`.
 
-Bien que ce ne soit pas absolument indispensable pour le fonctionnement de l'application, mais simplement pratique pour déboguer éventuellement
-l'exposition d'API destinée à la consommation par des services, ce certificat "client" va être déployé dans le navigateur internet utilisé pour l'exercice.
-La manipulation est montrée pour Edge, mais sera très peu différente pour les autres navigateurs. Dans les paramètres, chercher une section
-nommée ```Certificats```, certainement dans une section sur la sécurité :
+Bien que ce ne soit pas absolument indispensable pour le fonctionnement de l'application, mais simplement pratique pour déboguer éventuellement l'exposition d'API destinée à la consommation par des services, ce certificat "client" va être déployé dans le navigateur internet utilisé pour l'exercice. La manipulation est montrée pour Edge, mais sera très peu différente pour les autres navigateurs. Dans les paramètres, chercher une section nommée ```Certificats```, certainement dans une section sur la sécurité :
 
 ![certificatsedge](./images/certificatsedge.png)
 
@@ -150,24 +111,24 @@ les autres options telles que proposées par défaut :
 Cliquer sur ```Suivant``` et, dans l'interface qui suit, accepter le mode proposé qui va placer le certificat dans le magasin ```Personnel```.
 Cliquer enfin sur ```Terminer``` et fermer la fenêtre de confirmation, puis celle de gestion des paramètres du navigateur internet.
 
-Pour Postman, la documentation explique comment enregistrer le certificat racine ainsi que le certificat client, mais je n'ai personnellement 
-pas réussi à trouver comment le faire fonctionner, une erreur de type ```Hostname/IP does not match certificate's altnames``` restant 
-présente dans tous les cas d'utilisation, y compris en modifiant les options pour alléger la sécurité. Pour déboguer les API, il est donc
-conseillé de le faire sur le serveur **TestOIDCBlazorWASM.Server**, les deux implémentations étant garanties équivalentes par construction, hormis
-pour ce qui conseille les autorisations, qui suivent un modèle différent. Il faudra pour cela utiliser le paramétrage de sécurité OAuth 2.0,
-comme cela sera détaillé par la suite sur le blog.
+Pour Postman, la documentation explique comment enregistrer le certificat racine ainsi que le certificat client, mais je n'ai personnellement pas réussi à trouver comment le faire fonctionner, une erreur de type ```Hostname/IP does not match certificate's altnames``` restant présente dans tous les cas d'utilisation, y compris en modifiant les options pour alléger la sécurité. Pour déboguer les API, il est donc conseillé de le faire sur le serveur **TestOIDCBlazorWASM.Server**, les deux implémentations étant garanties équivalentes par construction, hormis pour ce qui conseille les autorisations, qui suivent un modèle différent. Il faudra pour cela utiliser le paramétrage de sécurité OAuth 2.0, comme cela sera détaillé par la suite sur le blog.
+
+# Ajustement de la configuration de l'application
+
+Le maximum a été mis en oeuvre pour que cette application fonctionne avec le moins de manipulation possible à la suite de la récupération du code source. Il est normalement possible d'ajuster l'hôte de déploiement (en `http://localhost`, par exemple) et de lancer Docker Compose pour démarrer l'ensemble. Il faudra ensuite paramétrer l'authentification OpenID Connect et tout le scénario devrait fonctionner tel quel. Toutefois, les fichiers `.env`, `.env-iam` et `.env-ged` ont été mis en place pour simplifier le changement des paramètres par défaut.
+
+Ces trois fichiers permettent respectivement de modifier :
+1. les paramètres agissant sur le comportement de l'application de test et les liens entre les services qui la composent ;
+2. les paramètres internes à l'IAM ;
+3. les paramètres internes à la GED.
+
+Afin de ne pas trop encombrer le présent fichier de documentation, un second document est disponible qui décrit précisément chacun des paramètres qu'il est possible d'ajuster, sous le nom de [README-ENV.md](./README-ENV.md).
 
 # Lancement de l'application
 
-Une fois les prérequis lancés, l'étape suivante avant de pouvoir lancer l'application consiste à ajuster les paramètres de façon à s'ajuster au contexte
-local et aux choix de l'utilisateur. La plupart des paramètres sont exposés dans les fichiers de configuration des projets (```appsettings.*```), mais
-nous allons commencer par paramétrer l'utilisation du certificat client pour la sécurité du projet ```TESTOIDCBlazorWASM.API```, car cette adaptation
-de sécurité n'est pas optionnelle.
+Une fois les prérequis lancés, l'étape suivante avant de pouvoir lancer l'application consiste à ajuster les paramètres de façon à s'ajuster au contexte local et aux choix de l'utilisateur. La plupart des paramètres sont exposés dans les fichiers de configuration des projets (```appsettings.*```), mais nous allons commencer par paramétrer l'utilisation du certificat client pour la sécurité du projet ```TESTOIDCBlazorWASM.API```, car cette adaptation de sécurité n'est pas optionnelle.
 
-
-
-
-. Avant de démarrer la solution, il faut également vérifier que les propriétés de lancement sont comme suit :
+Avant de démarrer la solution, il faut également vérifier que les propriétés de lancement sont comme suit :
 
 ![paramsolution](./images/paramsolution.png)
 
@@ -251,4 +212,3 @@ https://www.yogihosting.com/certificate-authentication/ a fourni la bonne séque
 ### Mécanisme de queues de messages
 
 https://www.rabbitmq.com/tutorials/tutorial-two-dotnet.html explique le mécanisme d'acknowledgement des messages consommés sur une queue RabbitMQ.
-
