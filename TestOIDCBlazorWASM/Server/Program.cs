@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 //builder.Services.AddCors();
 
-// Ajout pour gérer le format JSONPatch, pas encore pris complètement en compte en natif dans System.Text.Json
+// Ajout pour gï¿½rer le format JSONPatch, pas encore pris complï¿½tement en compte en natif dans System.Text.Json
 builder.Services.AddControllers(options =>
 {
     options.InputFormatters.Insert(0, CustomJPIF.GetJsonPatchInputFormatter());
@@ -23,10 +23,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 {
     // On doit pouvoir faire mieux avec un binder de configuration
     IConfigurationSection ConfigOIDC = builder.Configuration.GetSection("OIDC");
-    o.Authority = builder.Configuration["OIDC__Authority"];
+    o.Authority = builder.Configuration["OIDC:Authority"];
     o.Audience = ConfigOIDC["Audience"];
-    // Les deux options à suivre ne sont à faire qu'en mode DEVELOPMENT, mais depuis que l'app doit être buildée
-    // avant qu'on puisse avoir accès à app.Environment.IsDevelopment(), on ne peut plus utiliser ces codes
+    // Les deux options ï¿½ suivre ne sont ï¿½ faire qu'en mode DEVELOPMENT, mais depuis que l'app doit ï¿½tre buildï¿½e
+    // avant qu'on puisse avoir accï¿½s ï¿½ app.Environment.IsDevelopment(), on ne peut plus utiliser ces codes
     //o.BackchannelHttpHandler = new HttpClientHandler()
     //{
     //    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
@@ -34,11 +34,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     o.RequireHttpsMetadata = false;
     //o.TokenValidationParameters.RoleClaimType = "user_roles";
 
-    o.TokenValidationParameters.RoleClaimType = ConfigOIDC["ModelePourRoleClaim"].Replace("${client_id}", builder.Configuration["OIDC__ClientId"]);
-    o.TokenValidationParameters.NameClaimType = ConfigOIDC["NameClaimType"]; // Fait sens ici car côté serveur, on utiliserait le nom pour la traçabilité
+    o.TokenValidationParameters.RoleClaimType = ConfigOIDC["ModelePourRoleClaim"].Replace("${client_id}", builder.Configuration["OIDC:ClientId"]);
+    o.TokenValidationParameters.NameClaimType = ConfigOIDC["NameClaimType"]; // Fait sens ici car cï¿½tï¿½ serveur, on utiliserait le nom pour la traï¿½abilitï¿½
     o.TokenValidationParameters.ValidateIssuer = false;
 
-    //   Pour éviter erreur ci-dessous :
+    //   Pour ï¿½viter erreur ci-dessous :
     //   ===> ERREUR AUTHENTIFICATION JWTBEARER : System.InvalidOperationException: IDX20803: Unable to obtain configuration from: 'System.String'.
     //--->System.IO.IOException: IDX20804: Unable to retrieve document from: 'System.String'.
     //--->System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
@@ -47,7 +47,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     //  at System.Net.Security.SslStream.CompleteHandshake(SslAuthenticationOptions sslAuthenticationOptions)
     o.BackchannelHttpHandler = new HttpClientHandler { ServerCertificateCustomValidationCallback = delegate { return true; } };
 
-    //o.SaveToken = true; // A voir dans la doc pour l'utilisation précise
+    //o.SaveToken = true; // A voir dans la doc pour l'utilisation prï¿½cise
     o.Events = new JwtBearerEvents()
     {
         OnAuthenticationFailed = c =>
@@ -71,10 +71,10 @@ builder.Services.AddTransient<IClaimsTransformation, ClaimsTransformer>();
 
 //builder.Services.AddApiAuthorization().AddAccountClaimsPrincipalFactory<ClaimsTransformer>();
 
-// Solution trouvée sur https://stackoverflow.com/questions/53702555/cant-access-roles-in-jwt-token-net-core
-// qui permet de générer des policies, et aussi d'extraire des rôles avec un ClaimsTransformer (redondant
-// avec la spécification plus haut des RoleClaimType = "user_roles", mais permet de gérer des cas plus complexes.
-// Pour des cas encore plus sophistiqués, voir https://referbruv.com/blog/role-based-and-claims-based-authorization-in-aspnet-core-using-policies-hands-on/
+// Solution trouvï¿½e sur https://stackoverflow.com/questions/53702555/cant-access-roles-in-jwt-token-net-core
+// qui permet de gï¿½nï¿½rer des policies, et aussi d'extraire des rï¿½les avec un ClaimsTransformer (redondant
+// avec la spï¿½cification plus haut des RoleClaimType = "user_roles", mais permet de gï¿½rer des cas plus complexes.
+// Pour des cas encore plus sophistiquï¿½s, voir https://referbruv.com/blog/role-based-and-claims-based-authorization-in-aspnet-core-using-policies-hands-on/
 builder.Services.AddAuthorization(o =>
 {
     string TargetUserRolesClaimName = builder.Configuration.GetSection("OIDC")["TargetUserRolesClaimName"];
@@ -89,8 +89,8 @@ builder.Services.AddAuthorization(o =>
 
 //builder.WebHost.UseUrls("http://+:5000");
 
-// Pour info, on peut brancher Keycloak comme proxy d'un IDP Microsoft OIDC comme Azure DC, mais pour récupérer
-// les claims pour aller sur Graph, il faut faire une bidouille expliquée sur https://keycloak.discourse.group/t/is-it-possible-to-use-an-keycloak-accesstoken-to-get-access-to-the-microsoft-graph/6831/3
+// Pour info, on peut brancher Keycloak comme proxy d'un IDP Microsoft OIDC comme Azure DC, mais pour rï¿½cupï¿½rer
+// les claims pour aller sur Graph, il faut faire une bidouille expliquï¿½e sur https://keycloak.discourse.group/t/is-it-possible-to-use-an-keycloak-accesstoken-to-get-access-to-the-microsoft-graph/6831/3
 
 var app = builder.Build();
 
@@ -113,7 +113,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Ajouté pour activer l'authentification et la gestion des autorisations intégrées
+// Ajoutï¿½ pour activer l'authentification et la gestion des autorisations intï¿½grï¿½es
 app.UseAuthentication();
 app.UseAuthorization();
 

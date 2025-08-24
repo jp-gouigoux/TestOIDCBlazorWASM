@@ -31,17 +31,17 @@ namespace TestOIDCBlazorWASM.Work
         public PersonnesControllerBase(IConfiguration config)
         {
             // Paramétrage base NoSQL
-            string conn = config["PersistanceNoSQL__PersonnesConnectionString"];
-            string NomBaseDeDonneesPersonnes = config["PersistanceNoSQL__PersonnesDatabaseName"];
+            string conn = config["PersistanceNoSQL:PersonnesConnectionString"];
+            string NomBaseDeDonneesPersonnes = config["PersistanceNoSQL:PersonnesDatabaseName"];
             Database = new MongoClient(conn).GetDatabase(NomBaseDeDonneesPersonnes);
-            NomCollectionPersonnes = config["PersistanceNoSQL__PersonnesCollectionName"];
+            NomCollectionPersonnes = config["PersistanceNoSQL:PersonnesCollectionName"];
             Collection = Database.GetCollection<DbPersonne>("personnes");
 
             // Paramétrage MOM
-            NomServeurMOM = config["RabbitMQ__HoteServeur"];
-            NomQueueMessages = config["RabbitMQ__NomQueueMessagesCreationPersonnes"];
-            NomUtilisateurMOM = config["RabbitMQ__Utilisateur"] ?? "guest";
-            MotDePasseMOM = config["RabbitMQ__MotDePasse"] ?? "guest";
+            NomServeurMOM = config["RabbitMQ:HoteServeur"] ?? "localhost";
+            NomQueueMessages = config["RabbitMQ:NomQueueMessagesCreationPersonnes"] ?? "personnes";
+            NomUtilisateurMOM = config["RabbitMQ:Utilisateur"] ?? "guest";
+            MotDePasseMOM = config["RabbitMQ:MotDePasse"] ?? "guest";
 
             // Paramétrage API
             ModeleEnteteHTTPLocation = config["ModeleEnteteHTTPLocation"];

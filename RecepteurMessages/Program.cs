@@ -27,12 +27,12 @@ if (string.IsNullOrEmpty(MotDePasseCertificatClient))
 string ServeurRabbitMQ = Configuration["RabbitMQ:HoteServeur"] ?? "localhost";
 string UserNameRabbitMQ = Configuration["RabbitMQ:Utilisateur"] ?? "guest";
 string PasswordRabbitMQ = Configuration["RabbitMQ:MotDePasse"] ?? "guest";
-if (ServeurRabbitMQ == null) throw new ArgumentException("L'argument de ligne de commande RabbitMQ__HoteServeur doit obligatoirement spécifier un serveur RabbitMQ");
+string NomQueueMessages = Configuration["RabbitMQ:NomQueueMessagesCreationPersonnes"] ?? "personnes";
 var factory = new ConnectionFactory() { HostName = ServeurRabbitMQ, UserName = UserNameRabbitMQ, Password = PasswordRabbitMQ };
 using (var connection = await factory.CreateConnectionAsync())
 using (var channel = await connection.CreateChannelAsync())
 {
-    await channel.QueueDeclareAsync(queue: Configuration["RabbitMQ:NomQueueMessagesCreationPersonnes"] ?? "personnes", durable: false, exclusive: false, autoDelete: false, arguments: null);
+    await channel.QueueDeclareAsync(queue: NomQueueMessages, durable: false, exclusive: false, autoDelete: false, arguments: null);
     var consumer = new AsyncEventingBasicConsumer(channel);
     consumer.ReceivedAsync += async (model, ea) => 
     {
@@ -92,7 +92,7 @@ using (var channel = await connection.CreateChannelAsync())
             await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
         }
     };
-    await channel.BasicConsumeAsync(queue: Configuration["RabbitMQ:NomQueueMessagesCreationPersonnes"], autoAck: false, consumer: consumer);
+    await channel.BasicConsumeAsync(queue: NomQueueMessages, autoAck: false, consumer: consumer);
 
     Console.WriteLine("Appuyer la touche ENTREE pour terminer le programme");
     Console.ReadLine();

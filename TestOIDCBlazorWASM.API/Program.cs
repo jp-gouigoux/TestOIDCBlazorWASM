@@ -28,7 +28,7 @@ builder.Services.AddAuthentication(CertificateAuthenticationDefaults.Authenticat
     {
         OnCertificateValidated = context =>
         {
-            string empreinteReference = builder.Configuration["Securite__EmpreinteCertificatClient"];
+            string empreinteReference = builder.Configuration["Securite:EmpreinteCertificatClient"];
             string empreinteRecue = context.ClientCertificate.Thumbprint;
 #if DEBUG
             Console.WriteLine("Empreinte reçue : {0}", empreinteRecue);
@@ -53,19 +53,19 @@ builder.Services.AddAuthentication(CertificateAuthenticationDefaults.Authenticat
 // La transformation du PFX en PEM change tout de même le message d'erreur de Postman de "Unable to verify the first certificate" à "socket hang up"
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
-    string MotDePasseCertificatClient = builder.Configuration["Securite__MotDePasseCertificatClient"];
-    string FichierMotDePasse = builder.Configuration["Securite__FichierMotDePasseCertificatClient"];
+    string MotDePasseCertificatClient = builder.Configuration["Securite:MotDePasseCertificatClient"];
+    string FichierMotDePasse = builder.Configuration["Securite:FichierMotDePasseCertificatClient"];
     if (!string.IsNullOrEmpty(FichierMotDePasse))
         MotDePasseCertificatClient = File.ReadAllText(FichierMotDePasse);
 #if DEBUG
     Console.WriteLine("Début du mot de passe reçu : {0}", MotDePasseCertificatClient.Substring(0, 3));
     Console.WriteLine("Fichier de mot de passe : {0}", FichierMotDePasse);
     Console.WriteLine("Existence du fichier de mot de passe : {0}", File.Exists(FichierMotDePasse));
-    Console.WriteLine("Fichier de certificat : {0}", builder.Configuration["Securite__CheminFichierCertificatClient"]);
-    Console.WriteLine("Existence du fichier de certificat : {0}", File.Exists(builder.Configuration["Securite__CheminFichierCertificatClient"]));
+    Console.WriteLine("Fichier de certificat : {0}", builder.Configuration["Securite:CheminFichierCertificatClient"]);
+    Console.WriteLine("Existence du fichier de certificat : {0}", File.Exists(builder.Configuration["Securite:CheminFichierCertificatClient"]));
 #endif
     var cert = new X509Certificate2(
-        builder.Configuration["Securite__CheminFichierCertificatClient"],
+        builder.Configuration["Securite:CheminFichierCertificatClient"],
         MotDePasseCertificatClient);
 
     options.ConfigureHttpsDefaults(o =>

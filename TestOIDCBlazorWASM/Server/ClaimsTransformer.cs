@@ -17,11 +17,11 @@ namespace TestOIDCBlazorWASM.Server
 
         public ClaimsTransformer(IConfiguration config)
         {
-            string ModelePourRoleClaim = config.GetSection("OIDC")["ModelePourRoleClaim"];
+            string ModelePourRoleClaim = config["OIDC:ModelePourRoleClaim"];
             PrefixeRoleClaim = ModelePourRoleClaim.Substring(0, ModelePourRoleClaim.IndexOf("."));
             SuffixeRoleClaim = ModelePourRoleClaim.Substring(ModelePourRoleClaim.LastIndexOf(".") + 1);
-            OIDCClientId = config["OIDC__ClientId"];
-            TargetUserRolesClaimName = config.GetSection("OIDC").GetValue<string>("TargetUserRolesClaimName");
+            OIDCClientId = config["OIDC:ClientId"];
+            TargetUserRolesClaimName = config["OIDC:TargetUserRolesClaimName"];
         }
 
         public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
