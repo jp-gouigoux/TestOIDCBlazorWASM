@@ -1,0 +1,164 @@
+services:
+
+  caddy:
+    image: caddy:2.10
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "./Caddyfile:/etc/caddy/Caddyfile"
+      - caddydata:/data
+      - caddyconfig:/config
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    restart: always
+
+  dbiam:
+    image: postgres:17.6
+    user: postgres
+    environment:
+      - POSTGRES_DB=${IAM_DB_NAME}
+      - POSTGRES_USER=${IAM_DB_USER}
+      - POSTGRES_PASSWORD=${IAM_DB_PASSWORD}
+    volumes:
+      - datadb:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 5s
+      timeout: 1s
+      retries: 6
+      start_period: 5s
+    restart: always
+
+  iam:
+    image: quay.io/keycloak/keycloak:26.3
+    environment:
+      - KEYCLOAK_ADMIN
+      - KEYCLOAK_ADMIN_PASSWORD
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://dbiam/${IAM_DB_NAME}
+      - KC_DB_USERNAME=${IAM_DB_USER}
+      - KC_DB_PASSWORD=${IAM_DB_PASSWORD}
+    command:
+      - start-dev
+      - --proxy-headers=xforwarded
+      - --hostname=https://dockereni.francecentral.cloudapp.azure.com/iam/
+      - --hostname-backchannel-dynamic=false
+      - --proxy-trusted-addresses=0.0.0.0/0
+    ports:
+      - "0.0.0.0:8080:8080"
+    restart: always
+
+  mom:
+    image: rabbitmq:4.1-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBIT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBIT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 3s
+      timeout: 1s
+      retries: 10
+      start_period: 5s
+    restart: always
+
+  db:
+    image: mongo:8.0
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "'db.runCommand(\"ping\").ok'", "localhost:27017/personnes", "--quiet"]
+      interval: 3s
+      timeout: 1s
+      retries: 10
+      start_period: 1s
+    ports:
+      - "27017:27017"
+    restart: always
+
+  ged:
+    image: math56890/lightweightcmis:0.5
+    ports:
+      - "8088:8080"
+    restart: always
+
+  recep:
+    image: jpgouigoux/recepteurmessages:1.4
+    build:
+      context: .
+      dockerfile: RecepteurMessages/Dockerfile
+      args:
+        - MAXINDEX_XKCD=50
+    environment:
+      - URLBaseServiceAPI=http://api
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQ__HoteServeur=mom
+      - RabbitMQ__Utilisateur=${RABBIT_USER}
+      - RabbitMQ__MotDePasse=${RABBIT_PASSWORD}
+      - RabbitMQ__NomQueueMessagesCreationPersonnes=${RABBIT_QUEUE_NAME}
+      - GED__URLBrowser=http://ged:8080/${CMIS_BROWSER_PATH}
+      - GED__ServiceAccountName=${GED_USER}
+      - GED__ServiceAccountPassword=${GED_PASSWORD}
+      - GED__ModeleURLExpositionDirecteDocuments=https://dockereni.francecentral.cloudapp.azure.com/${CMIS_BROWSER_PATH}${CMIS_ACCESS_PATH}
+      - Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient
+      - Securite__CheminFichierCertificatClient=/run/secrets/certifclient
+      - XKCD__TemplateURLAPI=https://xkcd.com/{indexImage}/info.0.json
+    secrets:
+      - pwdcertifclient
+      - certifclient
+    stdin_open: true
+    tty: true
+    deploy:
+      replicas: 1
+    restart: always
+
+  api:
+    image: jpgouigoux/testoidcblazorwasmapi:1.4
+    build:
+      context: .
+      dockerfile: TestOIDCBlazorWASM.API/Dockerfile
+    environment:
+      - Securite__CheminFichierCertificatClient=/run/secrets/certifclient
+      - ASPNETCORE_ENVIRONMENT=Development
+      - PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017
+      - PersistanceNoSQL__PersonnesDatabaseName=${MONGO_DB_NAME}
+      - PersistanceNoSQL__PersonnesCollectionName=${MONGO_DB_COLLECTION}
+      - Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient
+      - Securite__EmpreinteCertificatClient=${THUMBPRINT_CERTIFICAT}
+    secrets:
+      - pwdcertifclient
+      - certifclient
+    restart: always
+
+  # Pattern BFF
+  server:
+    image: jpgouigoux/testoidcblazorwasmserver:1.4
+    build:
+      context: .
+      dockerfile: TestOIDCBlazorWASM/Server/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQ__HoteServeur=mom
+      - RabbitMQ__Utilisateur=${RABBIT_USER}
+      - RabbitMQ__MotDePasse=${RABBIT_PASSWORD}
+      - RabbitMQ__NomQueueMessagesCreationPersonnes=${RABBIT_QUEUE_NAME}
+      - PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017
+      - PersistanceNoSQL__PersonnesDatabaseName=${MONGO_DB_NAME}
+      - PersistanceNoSQL__PersonnesCollectionName=${MONGO_DB_COLLECTION}
+      - OIDC__Authority=https://dockereni.francecentral.cloudapp.azure.com/iam/realms/${KEYCLOAK_REALM}/
+      - OIDC__ClientId=${KEYCLOAK_CLIENT}
+    ports:
+      - "5000:5000"
+    restart: always
+
+volumes:
+  datadb:
+    driver: local
+  caddydata:
+  caddyconfig:
+
+secrets:
+  pwdcertifclient:
+    file: ./MotDePasseCertificatClient.secret
+  certifclient:
+    file: ./clienttestoidc.pfx
