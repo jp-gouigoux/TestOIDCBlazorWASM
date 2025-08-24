@@ -99,7 +99,7 @@ services:
       - GED__URLBrowser=http://ged:8080/${CMIS_BROWSER_PATH}
       - GED__ServiceAccountName=${GED_USER}
       - GED__ServiceAccountPassword=${GED_PASSWORD}
-      - GED__ModeleURLExpositionDirecteDocuments=https://dockereni.francecentral.cloudapp.azure.com/${CMIS_BROWSER_PATH}${CMIS_ACCESS_PATH}
+      - GED__ModeleURLExpositionDirecteDocuments=https://dockereni.francecentral.cloudapp.azure.com/${CMIS_BROWSER_PATH}/${CMIS_ACCESS_PATH}
       - Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient
       - Securite__CheminFichierCertificatClient=/run/secrets/certifclient
       - XKCD__TemplateURLAPI=https://xkcd.com/{indexImage}/info.0.json
