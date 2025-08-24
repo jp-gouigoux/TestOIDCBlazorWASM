@@ -21,12 +21,12 @@ namespace RecepteurMessages
         {
             // Récupération d'une image sur XKCD
             int maximumIndexImage = 614;
-            int.TryParse(Configuration["XKCD__MaximumIndexImage"], out maximumIndexImage);
+            int.TryParse(Configuration["XKCD:MaximumIndexImage"], out maximumIndexImage);
             int indexImage = hasard.Next(maximumIndexImage) + 1;
             Console.WriteLine("Index image : " + indexImage);
-            Console.WriteLine("TemplateURL : " + Configuration["XKCD__TemplateURLAPI"]);
+            Console.WriteLine("TemplateURL : " + Configuration["XKCD:TemplateURLAPI"]);
             Task<string> definition = client.GetStringAsync(
-                Configuration["XKCD__TemplateURLAPI"].Replace("{indexImage}", indexImage.ToString()));
+                Configuration["XKCD:TemplateURLAPI"].Replace("{indexImage}", indexImage.ToString()));
             JsonDocument json = JsonDocument.Parse(definition.Result);
             string? urlPhoto = json.RootElement.GetProperty("img").GetString();
             Console.WriteLine("URL image : " + urlPhoto);

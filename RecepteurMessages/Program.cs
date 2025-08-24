@@ -17,22 +17,22 @@ IConfiguration Configuration = new ConfigurationBuilder()
   .AddCommandLine(args)
   .Build();
 
-string? MotDePasseCertificatClient = Configuration["Securite__MotDePasseCertificatClient"];
-string? FichierMotDePasse = Configuration["Securite__FichierMotDePasseCertificatClient"];
+string? MotDePasseCertificatClient = Configuration["Securite:MotDePasseCertificatClient"];
+string? FichierMotDePasse = Configuration["Securite:FichierMotDePasseCertificatClient"];
 if (!string.IsNullOrEmpty(FichierMotDePasse))
     MotDePasseCertificatClient = File.ReadAllText(FichierMotDePasse);
 if (string.IsNullOrEmpty(MotDePasseCertificatClient))
     throw new ArgumentException("Un paramétrage du mot de passe pour le certificat client, par fichier ou par valeur, est obligatoire dans la section Securite");
 
-string ServeurRabbitMQ = Configuration["RabbitMQ__HoteServeur"] ?? "localhost";
-string UserNameRabbitMQ = Configuration["RabbitMQ__Utilisateur"] ?? "guest";
-string PasswordRabbitMQ = Configuration["RabbitMQ__MotDePasse"] ?? "guest";
+string ServeurRabbitMQ = Configuration["RabbitMQ:HoteServeur"] ?? "localhost";
+string UserNameRabbitMQ = Configuration["RabbitMQ:Utilisateur"] ?? "guest";
+string PasswordRabbitMQ = Configuration["RabbitMQ:MotDePasse"] ?? "guest";
 if (ServeurRabbitMQ == null) throw new ArgumentException("L'argument de ligne de commande RabbitMQ__HoteServeur doit obligatoirement spécifier un serveur RabbitMQ");
 var factory = new ConnectionFactory() { HostName = ServeurRabbitMQ, UserName = UserNameRabbitMQ, Password = PasswordRabbitMQ };
 using (var connection = await factory.CreateConnectionAsync())
 using (var channel = await connection.CreateChannelAsync())
 {
-    await channel.QueueDeclareAsync(queue: Configuration["RabbitMQ__NomQueueMessagesCreationPersonnes"] ?? "personnes", durable: false, exclusive: false, autoDelete: false, arguments: null);
+    await channel.QueueDeclareAsync(queue: Configuration["RabbitMQ:NomQueueMessagesCreationPersonnes"] ?? "personnes", durable: false, exclusive: false, autoDelete: false, arguments: null);
     var consumer = new AsyncEventingBasicConsumer(channel);
     consumer.ReceivedAsync += async (model, ea) => 
     {
@@ -51,7 +51,7 @@ using (var channel = await connection.CreateChannelAsync())
                 Console.WriteLine("Fiche créée (taille : " + pdf.Length + ")");
 
                 // Cette fiche est ensuite déposée dans une GED (n'importe laquelle, du moment qu'elle supporte CMIS)
-                string templateNomFichier = Configuration["GED__ModeleNomFichierPourFichesPersonnes"] ?? "Fichier-{prenom}-{patronyme}.pdf";
+                string templateNomFichier = Configuration["GED:ModeleNomFichierPourFichesPersonnes"] ?? "Fichier-{prenom}-{patronyme}.pdf";
                 string nomFichier = templateNomFichier.Replace("{prenom}", p.Prenom).Replace("{patronyme}", p.Patronyme);
                 Console.WriteLine("Nom du fichier pour la GED : " + nomFichier);
                 string idDoc = await ClientGED.DeposerGEDAsync(Configuration, pdf, nomFichier);
@@ -65,7 +65,7 @@ using (var channel = await connection.CreateChannelAsync())
 
                 // Appel de l'API Personnes pour patcher le code du document associé
                 // (même si le mieux sera de faire une requête CMIS dynamique à chaque appel)
-                string? modeleURLExpositionDirecteDocuments = Configuration["GED__ModeleURLExpositionDirecteDocuments"];
+                string? modeleURLExpositionDirecteDocuments = Configuration["GED:ModeleURLExpositionDirecteDocuments"];
                 if (string.IsNullOrEmpty(modeleURLExpositionDirecteDocuments))
                     throw new ArgumentException("L'attribut ModeleURLExpositionDirecteDocuments doit être spécifié dans la section de configuration GED");
                 ClientAPIPersonnes.AjouterFicheSurPersonne(
@@ -92,7 +92,7 @@ using (var channel = await connection.CreateChannelAsync())
             await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
         }
     };
-    await channel.BasicConsumeAsync(queue: Configuration["RabbitMQ__NomQueueMessagesCreationPersonnes"], autoAck: false, consumer: consumer);
+    await channel.BasicConsumeAsync(queue: Configuration["RabbitMQ:NomQueueMessagesCreationPersonnes"], autoAck: false, consumer: consumer);
 
     Console.WriteLine("Appuyer la touche ENTREE pour terminer le programme");
     Console.ReadLine();

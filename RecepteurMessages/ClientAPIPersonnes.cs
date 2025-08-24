@@ -21,8 +21,8 @@ namespace RecepteurMessages
             // et le premier code exemple utilisé est celui indiqué sur https://stackoverflow.com/questions/40014047/add-client-certificate-to-net-core-httpclient
             if (client == null)
             {
-                string MotDePasseCertificatClient = Configuration["Securite__MotDePasseCertificatClient"]!;
-                string FichierMotDePasse = Configuration["Securite__FichierMotDePasseCertificatClient"]!;
+                string MotDePasseCertificatClient = Configuration["Securite:MotDePasseCertificatClient"]!;
+                string FichierMotDePasse = Configuration["Securite:FichierMotDePasseCertificatClient"]!;
                 if (!string.IsNullOrEmpty(FichierMotDePasse))
                     MotDePasseCertificatClient = File.ReadAllText(FichierMotDePasse);
                 if (string.IsNullOrEmpty(MotDePasseCertificatClient))
@@ -32,7 +32,7 @@ namespace RecepteurMessages
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 handler.SslProtocols = SslProtocols.Tls12;
 
-                string CheminFichierCertificatClient = Configuration["Securite__CheminFichierCertificatClient"]
+                string CheminFichierCertificatClient = Configuration["Securite:CheminFichierCertificatClient"]
                     ?? throw new ArgumentException("Le paramètre de configuration Securite CheminFichierCertificatClient doit être renseigné pour utiliser le certificat client");
 #if DEBUG
                 Console.WriteLine("Mot de passe du certificat client : " + MotDePasseCertificatClient);
