@@ -34,6 +34,8 @@ services:
 
   iam:
     image: quay.io/keycloak/keycloak:26.3
+    env_file:
+      - path: .env-iam
     environment:
       - KEYCLOAK_ADMIN
       - KEYCLOAK_ADMIN_PASSWORD
@@ -44,7 +46,7 @@ services:
     command:
       - start-dev
       - --proxy-headers=xforwarded
-      - --hostname=https://dockereni.francecentral.cloudapp.azure.com/iam/
+      - --hostname=${DEPLOY_HOST}/iam/
       - --hostname-backchannel-dynamic=false
       - --proxy-trusted-addresses=0.0.0.0/0
     ports:
@@ -89,6 +91,9 @@ services:
       dockerfile: RecepteurMessages/Dockerfile
       args:
         - MAXINDEX_XKCD=50
+    env_file:
+      - path: .env-ged
+        required: false
     environment:
       - URLBaseServiceAPI=http://api
       - ASPNETCORE_ENVIRONMENT=Development
@@ -97,9 +102,7 @@ services:
       - RabbitMQ__MotDePasse=${RABBIT_PASSWORD}
       - RabbitMQ__NomQueueMessagesCreationPersonnes=${RABBIT_QUEUE_NAME}
       - GED__URLBrowser=http://ged:8080/${CMIS_BROWSER_PATH}
-      - GED__ServiceAccountName=${GED_USER}
-      - GED__ServiceAccountPassword=${GED_PASSWORD}
-      - GED__ModeleURLExpositionDirecteDocuments=https://dockereni.francecentral.cloudapp.azure.com/${CMIS_BROWSER_PATH}/${CMIS_ACCESS_PATH}
+      - GED__ModeleURLExpositionDirecteDocuments=${DEPLOY_HOST}/${CMIS_BROWSER_PATH}/${CMIS_ACCESS_PATH}
       - Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient
       - Securite__CheminFichierCertificatClient=/run/secrets/certifclient
       - XKCD__TemplateURLAPI=https://xkcd.com/{indexImage}/info.0.json
@@ -145,7 +148,7 @@ services:
       - PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017
       - PersistanceNoSQL__PersonnesDatabaseName=${MONGO_DB_NAME}
       - PersistanceNoSQL__PersonnesCollectionName=${MONGO_DB_COLLECTION}
-      - OIDC__Authority=https://dockereni.francecentral.cloudapp.azure.com/iam/realms/${KEYCLOAK_REALM}/
+      - OIDC__Authority=${DEPLOY_HOST}/iam/realms/${KEYCLOAK_REALM}/
       - OIDC__ClientId=${KEYCLOAK_CLIENT}
     ports:
       - "5000:5000"
