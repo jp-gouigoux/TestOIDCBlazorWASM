@@ -23,7 +23,7 @@ services:
       - POSTGRES_USER=${IAM_DB_USER}
       - POSTGRES_PASSWORD=${IAM_DB_PASSWORD}
     volumes:
-      - datadb:/var/lib/postgresql/data
+      - iamdb:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready"]
       interval: 5s
@@ -37,21 +37,25 @@ services:
     env_file:
       - path: .env-iam
     environment:
-      - KEYCLOAK_ADMIN
-      - KEYCLOAK_ADMIN_PASSWORD
-      - KC_DB=postgres
-      - KC_DB_URL=jdbc:postgresql://dbiam/${IAM_DB_NAME}
+      - KC_DB_URL_HOST=dbiam
+      - KC_DB_URL_DATABASE=${IAM_DB_NAME}
       - KC_DB_USERNAME=${IAM_DB_USER}
       - KC_DB_PASSWORD=${IAM_DB_PASSWORD}
+      - KC_DB=postgres
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
     command:
       - start-dev
       - --proxy-headers=xforwarded
-      - --hostname=${DEPLOY_HOST}/iam/
+      - "--hostname=${DEPLOY_HOST}/iam/"
       - --hostname-backchannel-dynamic=false
       - --proxy-trusted-addresses=0.0.0.0/0
     ports:
       - "0.0.0.0:8080:8080"
     restart: always
+    depends_on:
+      dbiam:
+        condition: service_healthy
 
   mom:
     image: rabbitmq:4.1-management
@@ -68,6 +72,8 @@ services:
 
   db:
     image: mongo:8.0
+    volumes:
+      - bizdb:/data/db
     healthcheck:
       test: ["CMD", "mongo", "--eval", "'db.runCommand(\"ping\").ok'", "localhost:27017/personnes", "--quiet"]
       interval: 3s
@@ -102,7 +108,7 @@ services:
       - RabbitMQ__MotDePasse=${RABBIT_PASSWORD}
       - RabbitMQ__NomQueueMessagesCreationPersonnes=${RABBIT_QUEUE_NAME}
       - GED__URLBrowser=http://ged:8080/${CMIS_BROWSER_PATH}
-      - GED__ModeleURLExpositionDirecteDocuments=${DEPLOY_HOST}/${CMIS_BROWSER_PATH}/${CMIS_ACCESS_PATH}
+      - "GED__ModeleURLExpositionDirecteDocuments=${DEPLOY_HOST}/${CMIS_BROWSER_PATH}/${CMIS_ACCESS_PATH}"
       - Securite__FichierMotDePasseCertificatClient=/run/secrets/pwdcertifclient
       - Securite__CheminFichierCertificatClient=/run/secrets/certifclient
       - XKCD__TemplateURLAPI=https://xkcd.com/{indexImage}/info.0.json
@@ -148,14 +154,16 @@ services:
       - PersistanceNoSQL__PersonnesConnectionString=mongodb://db:27017
       - PersistanceNoSQL__PersonnesDatabaseName=${MONGO_DB_NAME}
       - PersistanceNoSQL__PersonnesCollectionName=${MONGO_DB_COLLECTION}
-      - OIDC__Authority=${DEPLOY_HOST}/iam/realms/${KEYCLOAK_REALM}/
+      - "OIDC__Authority=${DEPLOY_HOST}/iam/realms/${KEYCLOAK_REALM}/"
       - OIDC__ClientId=${KEYCLOAK_CLIENT}
     ports:
       - "5000:5000"
     restart: always
 
 volumes:
-  datadb:
+  bizdb:
+    driver: local
+  iamdb:
     driver: local
   caddydata:
   caddyconfig:
