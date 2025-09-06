@@ -1,22 +1,26 @@
 # TestOIDCBlazorWASM
 
-Cette application exemple montre un **client Blazor WebAssembly** qui se connecte à un **serveur ASP.NET Core** qui porte le téléchargement de la Single Page Application ainsi qu'une exposition d'API, les deux étant authentifiés par un serveur d'identité **OpenID Connect** implémenté en **KeyCloak**. La persistance de l'API est assurée par une base **MongoDB** pour les données, et une **GED LightweightCMISServer** (projet open source disponible sur https://github.com/Math09865/lightweightCMISserver/) appelée en norme CMIS pour les documents. Les documents sont générés en asynchrone par un client **console .NET Core** qui lit une queue de message **RabbitMQ** et modifie la persistance par une seconde entrée d'API, protégée cette fois par un mécanisme **ClientCertificate**. Cette seconde exposition d'API se fait sur un autre port que la première mais avec une implémentation unique, les deux contrôleurs se basant sur une seule et unique classe abstraite, en ne surchargeant que les politiques d'accès.
+Cette application exemple montre un **client Blazor WebAssembly** qui se connecte à un **serveur ASP.NET Core** portant le téléchargement de la Single Page Application ainsi qu'une exposition d'API, les deux étant authentifiés par un serveur d'identité **OpenID Connect** implémenté en **KeyCloak**. La persistance de l'API est assurée par une base **MongoDB** pour les données, et une **GED LightweightCMISServer** (projet open source disponible sur https://github.com/Math09865/lightweightCMISserver/) appelée en norme CMIS pour les documents. Les documents sont générés en asynchrone par un client **console .NET Core** qui lit une queue de message **RabbitMQ** et modifie la persistance par une seconde entrée d'API, protégée cette fois par un mécanisme **ClientCertificate**. Cette seconde exposition d'API se fait sur un autre port que la première mais avec une implémentation unique, les deux contrôleurs se basant sur une seule et unique classe abstraite, en ne surchargeant que les politiques d'accès.
 
 Afin de ne pas encombrer le présent fichier, qui a juste pour objectif de permettre de lancer l'application, les détails sur la conception, les problèmes rencontrés, les choix architecturaux et leurs avantages seront exposés à part, sur plusieurs articles d'une même catégorie dans le blog http://gouigoux.com/blog-fr/?tag=TestOIDCBlazorWASM. A partir de 2024, tous les articles qui compléteront la description de cette application seront désormais écrits sur la nouvelle implémentation du blog statique disponible sur https://gouigoux.com/blog-md/.
 
+Le présent projet sert d'exemple de mise en oeuvre de Docker pour [le livre aux Editions ENI](https://www.editions-eni.fr/livre/docker-concepts-fondamentaux-et-deploiement-d-applications-concues-en-services-2e-edition-9782409038068#lblReviews) "Concepts fondamentaux et déploiement d'applications conçues en services", actuellement en seconde édition.
+
 # Démarrage rapide
 
-Pour lancer le plus facilement possible l'application, un fichier `compose.yaml` est fourni à la racine de ce dépôt. Si vous ne souhaitez pas compiler les images Docker vous-même, il suffit de recopier ce fichier ainsi que les fichiers dont le nom commence par `.env` dans un répertoire donné, de modifier les paramètres dans ces fichiers d'environnement et de lancer le tout avec la commande `docker compose up`.
+Pour lancer le plus facilement possible l'application, un fichier `compose.yaml` est fourni à la racine de ce dépôt. Si vous ne souhaitez pas compiler les images Docker vous-même, il suffit de recopier ce fichier ainsi que les fichiers dont le nom commence par `.env` dans un répertoire donné, de modifier quelques paramètres dans ces fichiers d'environnement et de lancer le tout avec la commande `docker compose up`.
 
 La plupart des paramètres peuvent être laissés tels quels, mais il y en a deux que vous devez paramétrer absolument :
 1. Le setting `DEPLOY_HOST` qui doit contenir l'adresse de l'hôte à utiliser (dans l'exemple ci-dessous, la valeur `https://dockereni.francecentral.cloudapp.azure.com` sera utilisée). Veillez à ne pas ajouter de symbole `/` à la fin de cette valeur.
-2. Le setting `THUMBPRINT_CERTIFICAT` qui doit être valué avec l'empreinte du certificat (voir ci-dessous pour ce paramétrage).
+2. Le setting `THUMBPRINT_CERTIFICAT` qui doit être valué avec l'empreinte du certificat (voir ci-dessous pour ce paramétrage). Ne pas fournir ce paramètre n'empêchera pas l'application de démarrer, mais vous ne pourrez pas réaliser le scénario fonctionnel complet.
+
+Pour ajuster les autres paramètres de l'application, vous pouvez vous référer à la documentation dédiée sur [README-ENV.md](./README-ENV.md).
 
 Si vous souhaitez modifier le code ou préférez compiler les images Docker vous-même, la procédure est la même, mais en commençant par cloner le dépôt (`git clone https://github.com/EditionsENI/TestOIDCBlazorWASM/`) et en vous positionnant dans le dossier généré.
 
 Une fois l'application démarrée, vous pouvez directement aller sur la racine de l'hôte (`https://dockereni.francecentral.cloudapp.azure.com/` dans l'exemple) et vous verrez la page d'accueil de l'application :
 
-![Page d'accueil de l'application exemple](accueil.png)
+![Page d'accueil de l'application exemple](./images/accueil.png)
 
 Par contre, pour pouvoir vous connecter à l'application, il est obligatoire de mettre en place un annuaire. Dans la section ci-dessous, son paramétrage est décrit. Notez que la section montre également comment lancer les conteneurs un par un, mais que si vous avez utilisé l'approche Docker Compose, vous ne devrez pas lancer ces commandes et vous pourrez simplement suivre les informations de paramétrage.
 
@@ -29,33 +33,34 @@ Pour fonctionner, l'application a besoin des serveurs satellites suivants, pour 
 L'Identity and Authorization Management, assurée en l'occurrence par un serveur Keycloak, est le seul service qui nécessite un peu de paramétrage applicatif, pour créer un tenant qui servira de mécanisme d'authentification à l'application. Le fait d'utiliser Keycloak, qui suit la norme OpenID Connect, est très évolutif dans le sens où nous pouvons commencer avec un simple paramétrage contenant un ou deux utilisateurs définis en dur, puis évoluer vers une fédération d'annuaires d'entreprises externes sans que cela n'ait d'impact sur l'application métier elle-même. Toutes les applications doivent aujourd'hui fonctionner de cette manière, la gestion interne d'une IAM étant la recette parfaite des problèmes de sécurité.
 
 ```
-docker run -p 8080:8080 -d -e KEYCLOAK_ADMIN=armoire -e KEYCLOAK_ADMIN_PASSWORD=vBWtB2PloopC042cszXZ --name iam quay.io/keycloak/keycloak:18.0.2 start-dev
+docker run -p 8080:8080 -d -e KEYCLOAK_ADMIN=armoire -e KEYCLOAK_ADMIN_PASSWORD=vBWtB2PloopC042cszXZ --name iam quay.io/keycloak/keycloak:26.3 start-dev
 ```
 
-**Attention, pour des raisons de sécurité, le compte administrateur défini dans les paramètres d'environnement ne sera pas modifié une fois créé dans la base de données attachée à Keycloak. Il s'agit d'un administrateur temporaire et Keycloak vous invitera à le remplacer par un autre compte admin, permanent celui-là, à la première connexion. Si vous souhaitez relancer le paramétrage complet, il faut absolument supprimer le volume `iamdb` pour que cela soit pris en compte.**
+**Attention, pour des raisons de sécurité, le compte administrateur défini dans les paramètres d'environnement ne sera pas modifié une fois créé dans la base de données attachée à Keycloak. Il s'agit d'un administrateur temporaire et Keycloak vous invitera à le remplacer par un autre compte admin, permanent celui-là, à la première connexion. Si vous souhaitez relancer le paramétrage complet, il faut absolument supprimer le volume associé (dans notre exemple complet, il se nomme `iamdb`) pour que cela soit pris en compte.**
 
 L'interface de KeyCloak est disponible sur `/admin/` (soit `https://dockereni.francecentral.cloudapp.azure.com/iam/admin` dans notre exemple), et les crédentiels sont ceux indiqués dans les settings `KEYCLOAK_ADMIN` et `KEYCLOAK_ADMIN_PASSWORD` du fichier `.env-iam`. Le paramétrage recommandé est le suivant :
 
-1. Créer un nouveau tenant d'authentification (bouton `AddRealm` en haut à gauche), le nommer par exemple `LivreENI`)
-2. A l'intérieur de ce royaume (un tenant, en langage d'IAM), créer un client avec OpenID Connect comme protocole ; dans notre exemple, il sera nommé `appli-eni`
-3. Ajouter à ce client deux URLs de redirection valides, à savoir `https://localhost:7070/authentication/login-callback` et `https://localhost:7070/authentication/logout-callback` (le numéro de port est à ajuster avec celui utilisé par le projet `Serveur`)
-4. Dans la même interface, spécifier comme Web Origin `https://localhost:7070`, là aussi en ajustant le port en fonction du contexte applicatif
-5. Toujours dans la définition du client `client-eni`, mais cette fois dans l'onglet Roles (attention à ne pas confondre avec le menu Roles sur la gauche), ajouter deux rôles, un nommé `administrateur` et un autre nommé `lecteur`
-6. Dans l'onglet `Mappers`, rajouter l'entité proposée `client roles` en le sélectionnant dans le menu `Add Builtin`
-7. Cliquer sur cette entité `client roles` pour modifier ses propriétés et activer l'option `Add to ID token`
-8. Vérifier que le critère `JSON Claim Type` est bien sur `String` (le mode `JSON` pourrait aider, mais pas réussi à le traiter pour l'instant)
-9. Ne pas oublier de cliquer ensuite sur `Save` pour valider ces modifications de la façon dont les rôles seront envoyés
-10. Changer d'interface en cliquant sur le menu `Users` sur la gauche et créer un premier utilisateur (dans notre exemple, son identifiant sera `jpg`), en précisant nom et prénom au moins
-1. Dans l'onglet `Credentials`, spécifier un mot de passe pour cet utilisateur en désactivant le mode temporaire pour ne pas forcer la réinitialisation lors de la première connexion (ceci n'est bien sûr pas à faire en production')
-2. Dans l'onglet `Role Mappings`, choisir le rôle client `appli-eni` et assigner à cet utilisateur les rôles `administrateur` et `lecteur`
-3. Recommencer l'opération avec un second utilisateur, qu'on nommera par exemple `gwen` et qui aura comme unique rôle client `lecteur`
+1. Créer un nouveau tenant d'authentification (bouton `Manage realms` en haut à gauche, puis `Create realm`), le nommer par exemple `LivreENI`)
+2. A l'intérieur de ce royaume (un tenant, en langage d'IAM), créer un client avec OpenID Connect comme protocole (dans le menu `Clients` à gauche, puis bouton `Create client`) ; dans notre exemple, il sera nommé `appli-eni` ; sur la seconde étape de l'assistant, laisser les valeurs par défaut (uniquement le Standard flow)
+3. A la troisème étape de l'assistant, ajouter à ce client deux URLs de redirection valides, à savoir `https://dockereni.francecentral.cloudapp.azure.com/authentication/login-callback` et `https://dockereni.francecentral.cloudapp.azure.com/authentication/logout-callback` (le nom de l'hôte est bien sûr à ajuster en fonction de l'environnement de déploiement)
+4. Dans la même interface, spécifier comme Web Origin `https://dockereni.francecentral.cloudapp.azure.com`, là aussi en ajustant le port en fonction du contexte applicatif ; il est important - là aussi - de ne pas rajouter de `/` à la fin de la valeur
+5. Toujours dans la définition du client `client-eni`, mais cette fois dans l'onglet `Roles` (attention à ne pas confondre avec le menu `Roles` sur la gauche), ajouter deux rôles, un nommé `administrateur` et un autre nommé `lecteur`
+6. Dans l'onglet `Client scopes` (celui du haut, correspondant à ce client, et pas celui sur le côté gauche, qui correspond aux scopes au niveau du royaume), cliquer sur le scope nommé `appli-eni-dedicated`
+7. Dans l'onglet `Mappers`, cliquer sur `Add predefined mapper` et sélectionner `client roles` ; valider avec le bouton `Add`
+8. Cliquer sur l'entrée `client roles` juste créée pour modifier ses propriétés et activer l'option `Add to ID token`
+9. Vérifier que le critère `JSON Claim Type` est bien sur `String` (le mode `JSON` pourrait être plus élégant, mais la manipulation dans le code se fera pour l'instant en texte)
+10. Ne pas oublier de cliquer ensuite sur `Save` pour valider ces modifications de la façon dont les rôles seront envoyés
+11. Changer d'interface en cliquant sur le menu `Users` sur la gauche et créer un premier utilisateur (dans notre exemple, son identifiant sera `jpg`), en précisant nom et prénom au moins
+12. Dans l'onglet `Credentials`, spécifier un mot de passe pour cet utilisateur en désactivant le mode temporaire pour ne pas forcer la réinitialisation lors de la première connexion (ceci n'est bien sûr pas à faire en production')
+13. Dans l'onglet `Role Mappings`, utiliser le bouton `Assign role` et choisir `Client roles`, puis assigner à cet utilisateur les rôles `administrateur` et `lecteur` visibles normalement dans la liste fournie
+14. Recommencer l'opération avec un second utilisateur, qu'on nommera par exemple `gwen` et qui aura comme unique rôle client `lecteur`
 
-**Attention à respecter scrupuleusement les contenus des paramètres, qui sont pour certains sensibles à la casse (nom du royaume) et pour d'autres (comme les origines web) poser problème si un caractère `/` est mis à la fin de l'URL**
+**Attention à respecter scrupuleusement les contenus des paramètres, qui sont pour certains sensibles à la casse (nom du royaume) et pour d'autres (comme les origines web) peuvent poser problème si un caractère `/` est mis à la fin de l'URL. De même, des fonctions sont accessibles sur le royaume complet ou seulement sur le client ; il convient de sélectionner le bon menu.**
 
 ### RabbitMQ
 
 ```
-docker run -d --hostname my-rabbit -p 15672:15672 -p 5672:5672 -e RABBITMQ_DEFAULT_USER=rapido -e RABBITMQ_DEFAULT_PASS=k5rXH6wmBhE2bukfXFsz --name mom rabbitmq:3-management
+docker run -d --hostname my-rabbit -p 15672:15672 -p 5672:5672 -e RABBITMQ_DEFAULT_USER=rapido -e RABBITMQ_DEFAULT_PASS=k5rXH6wmBhE2bukfXFsz --name mom rabbitmq:4.1-management
 ```
 
 L'interface est disponible sur http://localhost:15672 avec les crédentiels fournis ci-dessus.
@@ -63,18 +68,20 @@ L'interface est disponible sur http://localhost:15672 avec les crédentiels four
 ### MongoDB
 
 ```
-docker run -d -p 27017:27017 --name db mongo:4.4
+docker run -d -p 27017:27017 --name db mongo:8.0
 ```
 
 Pas d'interface web de gestion par défaut, mais Robo 3T est un excellent client, qui peut être téléchargé sur https://github.com/Studio3T/robomongo et reste gratuit à ce jour. A noter que, par défaut, l'accès à la base de données n'est pas sécurisé. La gestion de l'authentification sur MongoDB étant une tâche un peu plus complexe que juste paramétrer un login et un mot de passe, elle est laissée de côté pour l'instant. La base de données n'étant pas exposée directement par l'ingress, on bénéficie tout de même d'un premier rideau de sécurité, qu'on peut éventuellement compléter en utilisant des règles de pare-feu de façon que seuls les serveurs applicatifs aient accès à la base de données.
 
-### Nuxeo
+### GED LightweightCMIS
 
 ```
-docker run -d --name ged -p 9000:8080 nuxeo
+docker run -d --name ged -p 9000:8080 math56890/lightweightcmis:0.5
 ```
 
-Par défaut, il faut utiliser le user `Administrator` et le mot de passe `Administrator` pour se connecter aux endpoints de la GED. L'image fournie sur DockerHub ne rend pas simple de modifier les crédentiels et ne fournit par défaut pas non plus d'interface graphique qui permettrait de remédier à ce mot de passe simple par défaut. Comme pour MongoDB, il est toutefois moins grave sur cette instance de garder ce défaut de sécurité pour l'instant, car il s'agit d'un serveur de pur back office, non exposé aux clients par l'ingress. Nous utiliserons le type `AtomPub` accessible sur http://localhost:9000/nuxeo/atom/cmis). Comme expliqué, l'image Nuxeo ne fournit pas d'interface graphique par défaut, donc le plus simple est d'utiliser le client CMIS Apache Chemistry disponible sur http://archive.apache.org/dist/chemistry/opencmis/1.1.0/.
+Lors de la précédente version du logiciel, la GED utilisée était une Nuxeo. Bien que cette GED ou Alfresco en version Community peuvent être de bons choix car bien compatibles avec CMIS 1.1, ces deux produits désormais passés sous pavillon d'Hyland restent des serveurs complexes et relativement lourds pour une simple application de démo. Nous utiliserons donc plutôt un projet open source (full disclosure : il s'agit d'un projet développé sur base Apache par un ancien collègue et repris par mon fils), qui réalise une implémentation légère de la partie du protocole CMIS 1.1 qui nous intéresse, à savoir la persistance et la gestion des types secondaires.
+
+Par défaut, il faut utiliser le user `admin` et le mot de passe `admin` pour se connecter aux endpoints de la GED. Pour la modification des paramètres, nous renvoyons au projet hébergé sur https://github.com/Math09865/lightweightCMISserver. A noter que cette GED est un pur backend et ne fournit aucune interface graphique ; le plus simple pour accéder aux documents est de passer par l'exposition HTTP directe, ou bien d'utiliser le client CMIS Apache Chemistry Workbench, disponible sur http://archive.apache.org/dist/chemistry/opencmis/1.1.0/. Comme pour MongoDB, il s'agit d'un serveur de pur back office, non exposé aux clients par l'ingress. Nous utiliserons le binding de type `Browser` accessible sur http://ged:8080/lightweightcmis/browser).
 
 # Préparation des certificats
 
@@ -144,6 +151,8 @@ Afin de ne pas trop encombrer le présent fichier de documentation, un second do
 
 # Lancement de l'application
 
+Bien que l'application soit principalement prévue pour fonctionner en mode Docker Compose, il est possible de la lancer dans Visual Studio. Le fichier correspondant à la solution est à la racine du présent projet, sous le nom `TestOIDCBlazorWASM.sln`.
+
 Une fois les prérequis lancés, l'étape suivante avant de pouvoir lancer l'application consiste à ajuster les paramètres de façon à s'ajuster au contexte local et aux choix de l'utilisateur. La plupart des paramètres sont exposés dans les fichiers de configuration des projets (`appsettings.*`), mais nous allons commencer par paramétrer l'utilisation du certificat client pour la sécurité du projet `TESTOIDCBlazorWASM.API`, car cette adaptation de sécurité n'est pas optionnelle.
 
 Avant de démarrer la solution, il faut également vérifier que les propriétés de lancement sont comme suit :
@@ -177,6 +186,8 @@ Ce traitement est suffisamment lent (grâce à un `System.Thread.Sleep` addition
 En attendant quelques secondes avant d'utiliser le bouton `Rafraichir`, on obtient une interface mise à jour dans laquelle le lien vers la GED permet de télécharger le fichier PDF généré en lien avec la personne créée (en utilisant une connexion à la GED en mode `Basic Authentication`, gérée normalement directement par le navigateur) :
 
 ![scenario6](./images/scenario6.png)
+
+Il est à noter que dans certains cas, la génération du document peut être en échec, par exemple parce que l'image prise au hasard sur le site internet est trop grande pour être inclue telle quelle dans le fichier. Ce comportement est voulu, car il permet de montrer que l'application continue de fonctionner telle quelle. Il a également pour but - à terme - de montrer la transactionnalité des queues de messages, et de remplacer le lien par un bouton `Recommencer`.
 
 # Persistance
 
