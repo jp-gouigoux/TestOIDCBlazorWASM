@@ -2,7 +2,7 @@
   "profiles": {
     "RecepteurMessages": {
       "commandName": "Project",
-      "commandLineArgs": "RabbitMQ__HoteServeur=localhost\r\nRabbitMQ__NomQueueMessagesCreationPersonnes=personnes\r\nGED__URLAtomPub=http://localhost:9000/nuxeo/atom/cmis\r\nGED__ServiceAccountName=Administrator\r\nGED__ModeleURLExpositionDirecteDocuments=http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}",
+      "commandLineArgs": "RabbitMQ__HoteServeur=localhost\r\nRabbitMQ__NomQueueMessagesCreationPersonnes=personnes\r\nGED__URLBrowser=http://localhost:8088/lightweightcmis/browser\r\nGED__ServiceAccountName=Administrator\r\nGED__ModeleURLExpositionDirecteDocuments=http://localhost:8088/default/root/?cmisselector=content&objectId={idDoc}",
       "environmentVariables": {
         "URLBaseServiceAPI": "https:/localhost:7136",
         "Securite__CheminFichierCertificatClient": "\"C:\\Users\\jpgou\\OneDrive\\Securite\\ClientCertificate\\clienttestoidc.pfx\""
@@ -10,7 +10,7 @@
     },
     "Docker": {
       "commandName": "Docker",
-      "commandLineArgs": "--RabbitMQ__HoteServeur my-rabbit --RabbitMQ__NomQueueMessagesCreationPersonnes personnes --RabbitMQ__Utilisateur rapido --RabbitMQ__MotDePasse k5rXH6wmBhE2bukfXFsz --GED__URLAtomPub http://localhost:9000/nuxeo/atom/cmis --GED__ServiceAccountName Administrator --GED__ModeleURLExpositionDirecteDocuments \"http://localhost:9000/nuxeo/atom/cmis/default/content/{nomFichier}?id={idDoc}\"",
+      "commandLineArgs": "--RabbitMQ__HoteServeur my-rabbit --RabbitMQ__NomQueueMessagesCreationPersonnes personnes --RabbitMQ__Utilisateur rapido --RabbitMQ__MotDePasse k5rXH6wmBhE2bukfXFsz --GED__URLAtomPub http://localhost:8088/lightweightcmis/browser --GED__ServiceAccountName Administrator --GED__ModeleURLExpositionDirecteDocuments \"http://localhost:8088/default/root/?cmisselector=content&objectId={idDoc}\"",
       "environmentVariables": {
         "Securite__MotDePasseCertificatClient": "oLG78hFS65gBNfx89PmPPp",
         "URLBaseServiceAPI": "https:/localhost:7136",
