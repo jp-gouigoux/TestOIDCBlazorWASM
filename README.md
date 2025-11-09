@@ -11,7 +11,7 @@ Le présent projet sert d'exemple de mise en oeuvre de Docker pour [le livre aux
 Pour lancer le plus facilement possible l'application, un fichier `compose.yaml` est fourni à la racine de ce dépôt. Si vous ne souhaitez pas compiler les images Docker vous-même, il suffit de recopier ce fichier ainsi que les fichiers dont le nom commence par `.env` dans un répertoire donné, de modifier quelques paramètres dans ces fichiers d'environnement et de lancer le tout avec la commande `docker compose up`.
 
 La plupart des paramètres peuvent être laissés tels quels, mais il y en a deux que vous devez paramétrer absolument :
-1. Le setting `DEPLOY_HOST` qui doit contenir l'adresse de l'hôte à utiliser (dans l'exemple ci-dessous, la valeur `https://dockereni.francecentral.cloudapp.azure.com` sera utilisée). Veillez à ne pas ajouter de symbole `/` à la fin de cette valeur.
+1. Le setting `DEPLOY_HOST` qui doit contenir l'adresse de l'hôte à utiliser (dans l'exemple ci-dessous, la valeur `https://dockereni.francecentral.cloudapp.azure.com` sera utilisée). Veillez à ne pas ajouter de symbole `/` à la fin de cette valeur. Il faut également reporter cette valeur d'hôte dans le fichier `Caddyfile`.
 2. Le setting `THUMBPRINT_CERTIFICAT` qui doit être valué avec l'empreinte du certificat (voir ci-dessous pour ce paramétrage). Ne pas fournir ce paramètre n'empêchera pas l'application de démarrer, mais vous ne pourrez pas réaliser le scénario fonctionnel complet.
 
 Pour ajuster les autres paramètres de l'application, vous pouvez vous référer à la documentation dédiée sur [README-ENV.md](./README-ENV.md).
