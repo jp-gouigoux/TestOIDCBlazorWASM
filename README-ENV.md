@@ -50,8 +50,8 @@ Comme pour la première section, il a été décidé de recourir à un fichier a
 
 La dernière section de `.env` contient les paramètres pour l'application métier elle-même (et non pas les dépendances, que nous venons de parcourir) :
 1. MONGO_DB_NAME : le nom de la base de données pour le stockage des informations de personnes manipulées par l'application.
-MONGO_DB_COLLECTION : le nom de la collection MongoDB utilisée dans cette base de données.
-THUMBPRINT_CERTIFICAT : l'empreinte du certificat X509 utilisée pour la communication sécurisée à l'API (voir le fichier [README.md](./README.md) pour plus de détails sur la mise en oeuvre de ces certificats).
+2. MONGO_DB_COLLECTION : le nom de la collection MongoDB utilisée dans cette base de données.
+3. THUMBPRINT_CERTIFICAT : l'empreinte du certificat X509 utilisée pour la communication sécurisée à l'API (voir le fichier [README.md](./README.md) pour plus de détails sur la mise en oeuvre de ces certificats).
 
 ## Fichiers de configuration additionnels
 
