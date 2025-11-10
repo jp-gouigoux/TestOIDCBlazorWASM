@@ -24,6 +24,8 @@ if (!string.IsNullOrEmpty(FichierMotDePasse))
 if (string.IsNullOrEmpty(MotDePasseCertificatClient))
     throw new ArgumentException("Un paramétrage du mot de passe pour le certificat client, par fichier ou par valeur, est obligatoire dans la section Securite");
 
+// TODO : au lieu de mettre en place une boucle infinie, une approche plus moderne et élégante
+// serait de passer cette application console en mode HostedService
 string ServeurRabbitMQ = Configuration["RabbitMQ:HoteServeur"] ?? "localhost";
 string UserNameRabbitMQ = Configuration["RabbitMQ:Utilisateur"] ?? "guest";
 string PasswordRabbitMQ = Configuration["RabbitMQ:MotDePasse"] ?? "guest";
