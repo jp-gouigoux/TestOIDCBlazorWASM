@@ -21,7 +21,7 @@ spec:
           secretName: certifclient
       containers:
       - name: recep
-        image: registreakseni.azurecr.io/recepteurmessages:1.4
+        image: registreakseni.azurecr.io/recepteurmessages:1.6
         imagePullPolicy: Always
         stdin: true
         tty: true

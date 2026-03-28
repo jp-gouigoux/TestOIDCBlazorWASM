@@ -20,7 +20,7 @@ spec:
           secretName: certifclient
       containers:
       - name: api
-        image: registreakseni.azurecr.io/testoidcblazorwasmapi:1.4
+        image: registreakseni.azurecr.io/testoidcblazorwasmapi:1.6
         imagePullPolicy: Always
         resources:
           requests:

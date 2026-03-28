@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: registreakseni.azurecr.io/testoidcblazorwasmserver:1.4
+        image: registreakseni.azurecr.io/testoidcblazorwasmserver:1.6
         imagePullPolicy: Always
         resources:
           requests:
