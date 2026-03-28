@@ -91,7 +91,7 @@ services:
     restart: always
 
   recep:
-    image: jpgouigoux/recepteurmessages:1.4
+    image: jpgouigoux/recepteurmessages:1.6
     build:
       context: .
       dockerfile: RecepteurMessages/Dockerfile
@@ -122,7 +122,7 @@ services:
     restart: always
 
   api:
-    image: jpgouigoux/testoidcblazorwasmapi:1.4
+    image: jpgouigoux/testoidcblazorwasmapi:1.6
     build:
       context: .
       dockerfile: TestOIDCBlazorWASM.API/Dockerfile
@@ -141,7 +141,7 @@ services:
 
   # Pattern BFF
   server:
-    image: jpgouigoux/testoidcblazorwasmserver:1.4
+    image: jpgouigoux/testoidcblazorwasmserver:1.6
     build:
       context: .
       dockerfile: TestOIDCBlazorWASM/Server/Dockerfile
